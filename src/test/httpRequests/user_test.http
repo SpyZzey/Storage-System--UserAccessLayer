@@ -1,0 +1,23 @@
+### Send POST request with json body
+POST localhost:8080/events/create
+Content-Type: application/json
+
+{
+  "name": "DateTest",
+  "description": "test",
+  "startDate": "2022-11-06T23:28:27.467010900",
+  "endDate": "2022-12-06T23:28:27.467010900",
+  "eventColor": "#555555",
+  "type": "1",
+  "allDay": "true"
+}
+
+### Send POST request with json body
+POST localhost:8080/users/register
+Content-Type: application/json
+
+{
+  "firstname": "John",
+  "lastname": "Doe",
+  "email": "johndoe@test.de"
+}
