@@ -22,23 +22,21 @@ import java.util.Map;
 
 public class Authentication {
 
-    public static boolean authenticate(String token) {
-        return false;
-    }
 
     /**
      * Creates, signs and returns a new RSA256 JSON Web Token with the public key stored at the path given by the
      * environment variable "PUBLIC_KEY_PATH" and the private key stored at the path given by the environment variable
      * "PRIVATE_KEY_PATH". The issuer of the token is StorageSystem.
-     * @return RSA256 JSON Web Token
+     * @return String - RSA256 JSON Web Token
      */
     public static String createToken(Map<String, ?> payload) throws IOException, NoSuchAlgorithmException, InvalidKeySpecException {
         RSAPublicKey publicKey = getRSAPublicKey(getPathToPublicKey());
         RSAPrivateKey privateKey = getRSAPrivateKey(getPathToPrivateKey());
+        Dotenv env = Dotenv.load();
 
         Algorithm algorithm = Algorithm.RSA256(publicKey, privateKey);
         return JWT.create()
-                .withIssuer("StorageSystem")
+                .withIssuer(env.get("TOKEN_ISSUER"))
                 .withPayload(payload)
                 .sign(algorithm);
     }
@@ -63,9 +61,10 @@ public class Authentication {
         RSAPublicKey publicKey = getRSAPublicKey(getPathToPublicKey());
         RSAPrivateKey privateKey = getRSAPrivateKey(getPathToPrivateKey());
 
+        Dotenv env = Dotenv.load();
         Algorithm algorithm = Algorithm.RSA256(publicKey, privateKey);
         return JWT.require(algorithm)
-                .withIssuer("StorageSystem")
+                .withIssuer(env.get("TOKEN_ISSUER"))
                 .build()
                 .verify(token);
     }

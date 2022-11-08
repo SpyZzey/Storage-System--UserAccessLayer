@@ -1,11 +1,15 @@
 package de.storagesystem.api.users;
 
+import com.auth0.jwt.interfaces.Claim;
+import com.auth0.jwt.interfaces.DecodedJWT;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import de.storagesystem.api.auth.Authentication;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpHeaders;
 import org.springframework.stereotype.Controller;
+import org.springframework.stereotype.Repository;
 import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
@@ -27,6 +31,23 @@ public class UserController {
         return userRepository.findById(id);
     }
 
+    @DeleteMapping("/delete")
+    public @ResponseBody ObjectNode deleteUser(@RequestBody User user) {
+        // TODO: Bearer Token for verification
+        String token = "";
+        ObjectNode response = new ObjectMapper().createObjectNode();
+        try {
+            DecodedJWT content = Authentication.verifyToken(token);
+            Map<String, Claim> claims = content.getClaims();
+
+        } catch (IOException | NoSuchAlgorithmException | InvalidKeySpecException e) {
+            response.put("status", "error");
+            //TODO: LOGGING
+        }
+
+        return response;
+    }
+
     /**
      * Registers a new user and returns a JWT token
      * @param user User object
@@ -43,6 +64,7 @@ public class UserController {
             response.put("token", token);
         } catch (NoSuchAlgorithmException | IOException | InvalidKeySpecException e) {
             response.put("status", "error");
+            //TODO: LOGGING
         }
         return response;
     }
