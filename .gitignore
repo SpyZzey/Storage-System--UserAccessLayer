@@ -32,3 +32,6 @@ build/
 ### VS Code ###
 .vscode/
 /src/main/resources/application.properties
+/keys/jwt_rsa_key.pub
+/keys/jwt_rsa_key.key
+/src/main/resources/.env
