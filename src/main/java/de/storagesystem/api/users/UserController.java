@@ -1,9 +1,11 @@
 package de.storagesystem.api.users;
 
+import com.auth0.jwt.exceptions.JWTVerificationException;
 import com.auth0.jwt.interfaces.Claim;
 import com.auth0.jwt.interfaces.DecodedJWT;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.sun.tools.jconsole.JConsoleContext;
 import de.storagesystem.api.auth.Authentication;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,32 +22,47 @@ import java.util.Map;
 import java.util.Optional;
 
 @Controller
-@RequestMapping("/users")
+@RequestMapping("/user")
 public class UserController {
+    private final UserService userService;
 
     @Autowired
-    private UserRepository userRepository;
-
-    @GetMapping("/get")
-    public @ResponseBody Optional<User> getUser(@RequestParam(value = "id") Long id) {
-        return userRepository.findById(id);
+    public UserController(UserService userService) {
+        this.userService = userService;
     }
 
-    @DeleteMapping("/delete")
-    public @ResponseBody ObjectNode deleteUser(@RequestBody User user) {
-        // TODO: Bearer Token for verification
-        String token = "";
-        ObjectNode response = new ObjectMapper().createObjectNode();
-        try {
-            DecodedJWT content = Authentication.verifyToken(token);
-            Map<String, Claim> claims = content.getClaims();
 
-        } catch (IOException | NoSuchAlgorithmException | InvalidKeySpecException e) {
-            response.put("status", "error");
-            //TODO: LOGGING
-        }
+    /**
+     * Returns the user information of the sender.
+     * @param authentication The authentication header/JWT Token.
+     * @return
+     */
+    @GetMapping
+    public @ResponseBody Optional<User> getUser(@RequestHeader(HttpHeaders.AUTHORIZATION) String authentication) {
+        return userService.getUser(authentication);
+    }
 
-        return response;
+    /**
+     * Updates a user with the user object in the request body or creates the user if the id does not exist.
+     * @param user The user object to update.
+     * @return A JSON Object with the status code and the user id.
+     */
+    @PutMapping
+    public @ResponseBody ObjectNode createOrUpdateUser(@RequestBody User user) {
+        return userService.createOrUpdateUser(user);
+    }
+
+    /**
+     * Deletes a user if the current sender is the user to be deleted or has the privilege to delete users.
+     * @param authentication The authentication header/JWT Token.
+     * @param id The id of the user to be deleted.
+     * @return A JSON Object with the status code and message.
+     */
+    @DeleteMapping
+    public @ResponseBody ObjectNode deleteUser(
+            @RequestHeader(HttpHeaders.AUTHORIZATION) String authentication,
+            @RequestParam(value = "id") Long id) {
+        return userService.deleteUser(id, authentication);
     }
 
     /**
@@ -53,51 +70,8 @@ public class UserController {
      * @param user User object
      * @return JSON String with status and JWT token
      */
-    @PostMapping("/register")
-    public @ResponseBody ObjectNode registerUser(@RequestBody User user) {
-        userRepository.save(user);
-
-        ObjectNode response = new ObjectMapper().createObjectNode();
-        try {
-            String token = createTokenForUser(user);
-            response.put("status", "ok");
-            response.put("token", token);
-        } catch (NoSuchAlgorithmException | IOException | InvalidKeySpecException e) {
-            response.put("status", "error");
-            //TODO: LOGGING
-        }
-        return response;
+    @PostMapping
+    public @ResponseBody ObjectNode createUser(@RequestBody User user) {
+        return userService.createUser(user);
     }
-
-    /**
-     * Creates a JWT token for a given user
-     * @param user User object
-     * @return JWT token
-     * @throws NoSuchAlgorithmException If the algorithm is not supported
-     * @throws IOException If the key cannot be read
-     * @throws InvalidKeySpecException If the key is invalid
-     */
-    private String createTokenForUser(User user) throws NoSuchAlgorithmException, IOException, InvalidKeySpecException {
-        String publicKeyPath = Authentication.getPathToPublicKey();
-        String privateKeyPath = Authentication.getPathToPrivateKey();
-
-        Authentication.createRSAKey(publicKeyPath, privateKeyPath);
-        Map<String, Object> payload = generateUserPayload(user);
-        return Authentication.createToken(payload);
-    }
-
-    /**
-     * Generates a payload for a given user
-     * @param user User object
-     * @return {@code Map<String, Object>} with the payload
-     */
-    private Map<String, Object> generateUserPayload(User user) {
-        Map<String, Object> payload = new HashMap<>();
-        payload.put("sub", user.id());
-        payload.put("firstname", user.firstname());
-        payload.put("lastname", user.lastname());
-
-        return payload;
-    }
-
 }

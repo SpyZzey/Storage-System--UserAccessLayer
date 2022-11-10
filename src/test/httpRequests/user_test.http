@@ -13,7 +13,7 @@ Content-Type: application/json
 }
 
 ### Send POST request with json body
-POST localhost:8080/users/register
+POST localhost:8080/user/
 Content-Type: application/json
 
 {
@@ -21,3 +21,12 @@ Content-Type: application/json
   "lastname": "Doe",
   "email": "johndoe@test.de"
 }
+
+### Send DELETE request
+DELETE localhost:8080/user/delete?id=1
+Authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9.eyJzdWIiOjUsImZpcnN0bmFtZSI6bnVsbCwiaXNzIjpudWxsLCJsYXN0bmFtZSI6bnVsbH0.c1bIhJag0DXnqbCI9acgr2J8FJpTAJRQIdkDsOeffd_x5JM1xoXMqZgUI7FIjmmg6f3nP8LnnzBvT2uw3S9e0csyd23awq2Wy1QorCiz0rAIm-vioZF6HDIK3wjrSBBXYya722Q-GME-TajKUv-HFeJiK-ZAEGap2_3kW3Rj8_LMhoMR2hpqYDtfyox6vMzdUYHu34ApxylyuIkgp5syI9MiwgmvvUK_jwN0J9TJNyStlGBgp6VJnGoe5pq-pdPdXqTV8ORT3lT5zBGVLH0IvtYOMhle-eeCit0Q8q4k71yL30ZzM7qWSdQVtyIsLYpA51S3kJy7VHwkQs5Q5xSw7w
+
+
+### SEND GetMapping request
+DELETE localhost:8080/user/print-all-headers?id=1
+Authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9.eyJzdWIiOjUsImZpcnN0bmFtZSI6bnVsbCwiaXNzIjpudWxsLCJsYXN0bmFtZSI6bnVsbH0.c1bIhJag0DXnqbCI9acgr2J8FJpTAJRQIdkDsOeffd_x5JM1xoXMqZgUI7FIjmmg6f3nP8LnnzBvT2uw3S9e0csyd23awq2Wy1QorCiz0rAIm-vioZF6HDIK3wjrSBBXYya722Q-GME-TajKUv-HFeJiK-ZAEGap2_3kW3Rj8_LMhoMR2hpqYDtfyox6vMzdUYHu34ApxylyuIkgp5syI9MiwgmvvUK_jwN0J9TJNyStlGBgp6VJnGoe5pq-pdPdXqTV8ORT3lT5zBGVLH0IvtYOMhle-eeCit0Q8q4k71yL30ZzM7qWSdQVtyIsLYpA51S3kJy7VHwkQs5Q5xSw7w

@@ -2,16 +2,20 @@ package de.storagesystem.api.users;
 
 import com.sun.istack.NotNull;
 
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
+import javax.persistence.*;
 
 @Entity
+@Table
 public class User {
 
     @Id
-    @GeneratedValue(strategy= GenerationType.AUTO)
+    @SequenceGenerator(
+            name = "user_sequence",
+            sequenceName = "user_sequence",
+            allocationSize = 1)
+    @GeneratedValue(
+            strategy = GenerationType.SEQUENCE,
+            generator = "user_sequence")
     private long id;
 
     @NotNull
@@ -20,6 +24,11 @@ public class User {
     private String lastname;
     @NotNull
     private String email;
+
+    private String password;
+
+    private boolean enabled;
+
 
     public long id() {
         return id;
@@ -52,4 +61,11 @@ public class User {
     public void setEmail(String email) {
         this.email = email;
     }
+
+    public void update(User user) {
+        this.firstname = user.firstname();
+        this.lastname = user.lastname();
+        this.email = user.email();
+    }
+
 }

@@ -5,6 +5,8 @@ import com.auth0.jwt.algorithms.Algorithm;
 import com.auth0.jwt.exceptions.JWTVerificationException;
 import com.auth0.jwt.interfaces.DecodedJWT;
 import io.github.cdimascio.dotenv.Dotenv;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -22,6 +24,14 @@ import java.util.Map;
 
 public class Authentication {
 
+    private static final Logger logger = LogManager.getLogger(Authentication.class);
+
+    public static String extractTokenFromBearer(String bearer) {
+        if(bearer == null) return null;
+        if(!bearer.startsWith("Bearer ")) return null;
+
+        return bearer.substring(7);
+    }
 
     /**
      * Creates, signs and returns a new RSA256 JSON Web Token with the public key stored at the path given by the
