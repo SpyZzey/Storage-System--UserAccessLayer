@@ -49,7 +49,7 @@ public class UserService {
             response.put("status", "error");
         }
 
-        return null;
+        return Optional.empty();
     }
 
 
