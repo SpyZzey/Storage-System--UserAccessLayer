@@ -1,4 +1,4 @@
-package de.storagesystem.api.main;
+package de.storagesystem.api;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;

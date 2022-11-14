@@ -1,8 +1,12 @@
 package de.storagesystem.api.users;
 
 import com.sun.istack.NotNull;
+import de.storagesystem.api.buckets.users.BucketUser;
 
+import javax.crypto.KeyGenerator;
+import javax.crypto.SecretKey;
 import javax.persistence.*;
+import java.security.NoSuchAlgorithmException;
 
 @Entity
 @Table
@@ -24,11 +28,15 @@ public class User {
     private String lastname;
     @NotNull
     private String email;
+    @NotNull
+    private SecretKey secretKey;
 
-    private String password;
+    @Transient
+    private BucketUser bucketUser;
 
-    private boolean enabled;
-
+    public User() throws NoSuchAlgorithmException {
+        this.secretKey = KeyGenerator.getInstance("AES").generateKey();
+    }
 
     public long id() {
         return id;
@@ -60,6 +68,21 @@ public class User {
 
     public void setEmail(String email) {
         this.email = email;
+    }
+
+    public SecretKey secretKey() {
+        return secretKey;
+    }
+
+    public void setSecretKey(SecretKey secretKey) {
+        this.secretKey = secretKey;
+    }
+
+    public BucketUser bucketUser() {
+        if(bucketUser == null) {
+            bucketUser = new BucketUser(firstname, lastname,  email);
+        }
+        return bucketUser;
     }
 
     public void update(User user) {

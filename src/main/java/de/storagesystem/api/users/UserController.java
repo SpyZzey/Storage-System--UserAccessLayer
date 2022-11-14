@@ -10,10 +10,12 @@ import de.storagesystem.api.auth.Authentication;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.stereotype.Repository;
 import org.springframework.web.bind.annotation.*;
 
+import javax.swing.text.html.Option;
 import java.io.IOException;
 import java.security.NoSuchAlgorithmException;
 import java.security.spec.InvalidKeySpecException;
@@ -22,7 +24,7 @@ import java.util.Map;
 import java.util.Optional;
 
 @Controller
-@RequestMapping("/user")
+@RequestMapping("/api/user")
 public class UserController {
     private final UserService userService;
 
@@ -48,7 +50,7 @@ public class UserController {
      * @return A JSON Object with the status code and the user id.
      */
     @PutMapping
-    public @ResponseBody ObjectNode createOrUpdateUser(@RequestBody User user) {
+    public @ResponseBody ResponseEntity<ObjectNode> createOrUpdateUser(@RequestBody User user) {
         return userService.createOrUpdateUser(user);
     }
 
@@ -71,7 +73,7 @@ public class UserController {
      * @return JSON String with status and JWT token
      */
     @PostMapping
-    public @ResponseBody ObjectNode createUser(@RequestBody User user) {
+    public @ResponseBody ResponseEntity<ObjectNode> createUser(@RequestBody User user) {
         return userService.createUser(user);
     }
 }

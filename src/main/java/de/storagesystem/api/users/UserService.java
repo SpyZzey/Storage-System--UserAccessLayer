@@ -8,6 +8,7 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import de.storagesystem.api.auth.Authentication;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
@@ -34,8 +35,8 @@ public class UserService {
         try {
             DecodedJWT content = Authentication.verifyToken(token);
             Map<String, Claim> claims = content.getClaims();
-            if(claims.get("id").asLong() != null) {
-                return userRepository.findById(claims.get("id").asLong());
+            if(claims.get("sub").asLong() != null) {
+                return userRepository.findById(claims.get("sub").asLong());
             } else {
                 throw new JWTVerificationException("No id in token");
             }
@@ -65,7 +66,7 @@ public class UserService {
         try {
             DecodedJWT content = Authentication.verifyToken(token);
             Map<String, Claim> claims = content.getClaims();
-            if(Objects.equals(claims.get("id").asLong(), id)) {
+            if(Objects.equals(claims.get("sub").asLong(), id)) {
                 userRepository.deleteById(id);
                 response.put("status", "ok");
                 response.put("message", "User deleted");
@@ -91,7 +92,7 @@ public class UserService {
      * @param user The user object to create or update.
      * @return A JSON Object with the status code and the user id.
      */
-    public ObjectNode createOrUpdateUser(User user) {
+    public ResponseEntity<ObjectNode> createOrUpdateUser(User user) {
         if(userRepository.existsById(user.id())) return updateUser(user);
         return createUser(user);
     }
@@ -101,7 +102,7 @@ public class UserService {
      * @param user User object to update.
      * @return JSON Object with status code (and user id on success).
      */
-    public ObjectNode updateUser(User user) {
+    public ResponseEntity<ObjectNode> updateUser(User user) {
         ObjectNode response = new ObjectMapper().createObjectNode();
         Optional<User> repoUserOpt = userRepository.findById(user.id());
         if(repoUserOpt.isPresent()) {
@@ -113,7 +114,7 @@ public class UserService {
             response.put("status", "error");
         }
 
-        return response;
+        return ResponseEntity.ok(response);
     }
 
     /**
@@ -121,7 +122,7 @@ public class UserService {
      * @param user User object to create.
      * @return JSON Object with status code (and user id and token on success).
      */
-    public ObjectNode createUser(User user) {
+    public ResponseEntity<ObjectNode> createUser(User user) {
         ObjectNode response = new ObjectMapper().createObjectNode();
         try {
             long id = userRepository.save(user).id();
@@ -134,7 +135,7 @@ public class UserService {
             response.removeAll();
             response.put("status", "error");
         }
-        return response;
+        return ResponseEntity.ok(response);
     }
 
     /**

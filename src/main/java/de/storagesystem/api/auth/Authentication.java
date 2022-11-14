@@ -26,6 +26,11 @@ public class Authentication {
 
     private static final Logger logger = LogManager.getLogger(Authentication.class);
 
+    /**
+     * Extracts the token from the bearer string.
+     * @param bearer The bearer string.
+     * @return String The token.
+     */
     public static String extractTokenFromBearer(String bearer) {
         if(bearer == null) return null;
         if(!bearer.startsWith("Bearer ")) return null;

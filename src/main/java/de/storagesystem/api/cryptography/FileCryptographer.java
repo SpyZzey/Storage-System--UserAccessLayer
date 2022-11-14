@@ -4,6 +4,6 @@ import java.io.File;
 
 public interface FileCryptographer {
 
-    void encryptFile(String key, byte[] contentBytes);
-    void decryptFile(String key);
+    void encryptFile(String path, byte[] contentBytes);
+    byte[] decryptFile(String path);
 }

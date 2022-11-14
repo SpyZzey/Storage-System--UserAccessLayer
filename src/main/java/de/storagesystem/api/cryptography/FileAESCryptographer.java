@@ -1,14 +1,10 @@
 package de.storagesystem.api.cryptography;
 
-import javax.crypto.Cipher;
-import javax.crypto.CipherOutputStream;
-import javax.crypto.NoSuchPaddingException;
-import javax.crypto.SecretKey;
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
+import javax.crypto.*;
+import javax.crypto.spec.IvParameterSpec;
+import java.io.*;
 import java.nio.file.Files;
+import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 
@@ -29,12 +25,10 @@ public class FileAESCryptographer implements FileCryptographer {
      */
     @Override
     public void encryptFile(String path, byte[] contentBytes) {
-        try {
+        try(FileOutputStream fs = new FileOutputStream(path);
+            CipherOutputStream cos = new CipherOutputStream(fs, cipher)) {
             cipher.init(Cipher.ENCRYPT_MODE, secretKey);
             byte[] iv = cipher.getIV();
-
-            FileOutputStream fs = new FileOutputStream(path);
-            CipherOutputStream cos = new CipherOutputStream(fs, cipher);
             fs.write(iv);
             cos.write(contentBytes);
         } catch (InvalidKeyException | IOException e) {
@@ -44,7 +38,28 @@ public class FileAESCryptographer implements FileCryptographer {
     }
 
     @Override
-    public void decryptFile(String key) {
+    public byte[] decryptFile(String path) {
+        byte[] contentBytes;
+        try(FileInputStream input = new FileInputStream(path)) {
+            byte[] fileIv = new byte[16];
+            input.read(fileIv);
+            cipher.init(Cipher.DECRYPT_MODE, secretKey, new IvParameterSpec(fileIv));
+            try(CipherInputStream cipherIn = new CipherInputStream(input, cipher);
+                ByteArrayOutputStream outputStream = new ByteArrayOutputStream()) {
 
+                int length;
+                byte[] buffer = new byte[4096];
+                while((length = cipherIn.read(buffer, 0, buffer.length)) != -1) {
+                    outputStream.write(buffer, 0, length);
+                }
+                outputStream.flush();
+                contentBytes = outputStream.toByteArray();
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+        } catch (IOException | InvalidKeyException | InvalidAlgorithmParameterException e) {
+            throw new RuntimeException(e);
+        }
+        return contentBytes;
     }
 }
