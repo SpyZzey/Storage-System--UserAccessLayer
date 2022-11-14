@@ -7,6 +7,7 @@ import javax.crypto.KeyGenerator;
 import javax.crypto.SecretKey;
 import javax.persistence.*;
 import java.security.NoSuchAlgorithmException;
+import java.util.Objects;
 
 @Entity
 @Table
@@ -35,6 +36,13 @@ public class User {
     private BucketUser bucketUser;
 
     public User() throws NoSuchAlgorithmException {
+        this.secretKey = KeyGenerator.getInstance("AES").generateKey();
+    }
+
+    public User(String firstname, String lastname, String email) throws NoSuchAlgorithmException {
+        this.firstname = firstname;
+        this.lastname = lastname;
+        this.email = email;
         this.secretKey = KeyGenerator.getInstance("AES").generateKey();
     }
 
@@ -91,4 +99,16 @@ public class User {
         this.email = user.email();
     }
 
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        User user = (User) o;
+        return id == user.id && firstname.equals(user.firstname) && lastname.equals(user.lastname) && email.equals(user.email) && secretKey.equals(user.secretKey);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id, firstname, lastname, email, secretKey);
+    }
 }

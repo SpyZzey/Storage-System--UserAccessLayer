@@ -10,8 +10,8 @@ import de.storagesystem.api.cryptography.FileCryptographer;
 import de.storagesystem.api.exceptions.StorageEntityCreationException;
 import de.storagesystem.api.exceptions.StorageEntityNotFoundException;
 import de.storagesystem.api.exceptions.UserNotFoundException;
-import de.storagesystem.api.storage.StorageSlaveServer;
-import de.storagesystem.api.storage.StorageSlaveServerRepository;
+import de.storagesystem.api.storage.StorageServer;
+import de.storagesystem.api.storage.StorageServerRepository;
 import de.storagesystem.api.users.User;
 import de.storagesystem.api.users.UserRepository;
 import io.github.cdimascio.dotenv.Dotenv;
@@ -20,6 +20,7 @@ import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.crypto.NoSuchPaddingException;
@@ -31,14 +32,14 @@ import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Stream;
 
-@Component
+@Service
 public class BucketService extends StorageFileSystem implements StorageService {
 
     private static final Logger logger = LogManager.getLogger(BucketService.class);
 
     private String serverPrefix;
-    private StorageSlaveServer storageServer;
-    private final StorageSlaveServerRepository storageSlaveServerRepository;
+    private StorageServer storageServer;
+    private final StorageServerRepository storageSlaveServerRepository;
     private final BucketDirectoryRepository bucketDirectoryRepository;
     private final BucketFileRepository bucketFileRepository;
     private final BucketRepository bucketRepository;
@@ -46,7 +47,7 @@ public class BucketService extends StorageFileSystem implements StorageService {
 
     @Autowired
     public BucketService(
-            StorageSlaveServerRepository storageSlaveServerRepository,
+            StorageServerRepository storageSlaveServerRepository,
             BucketDirectoryRepository bucketDirectoryRepository,
             BucketFileRepository bucketFileRepository,
             BucketRepository bucketRepository,
@@ -243,7 +244,7 @@ public class BucketService extends StorageFileSystem implements StorageService {
         return new ByteArrayResource(fileAESCryptographer.decryptFile(file.storedPath()));
     }
 
-    private StorageSlaveServer getStorageServer() {
+    private StorageServer getStorageServer() {
         if(storageServer == null) loadOrCreateStorageServer();
         return storageServer;
     }
@@ -254,14 +255,14 @@ public class BucketService extends StorageFileSystem implements StorageService {
         String servername = dotenv.get("SERVER_NAME");
         String host = dotenv.get("SERVER_HOST");
         int port = Integer.parseInt(dotenv.get("SERVER_PORT"));
-        Optional<StorageSlaveServer> optStorageServer = storageSlaveServerRepository.findStorageServerByIp(host, port);
+        Optional<StorageServer> optStorageServer = storageSlaveServerRepository.findStorageServerByIp(host, port);
         if(optStorageServer.isPresent()) {
             storageServer = optStorageServer.get();
         } else {
             File file = new File(root());
             long freeSpace = file.getUsableSpace();
             long totalSpace = file.getTotalSpace();
-            storageServer = new StorageSlaveServer(servername, host, port, freeSpace, totalSpace);
+            storageServer = new StorageServer(servername, host, port, freeSpace, totalSpace);
             storageSlaveServerRepository.save(storageServer);
         }
     }

@@ -7,6 +7,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.sun.tools.jconsole.JConsoleContext;
 import de.storagesystem.api.auth.Authentication;
+import org.apache.coyote.Response;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
@@ -61,7 +62,7 @@ public class UserController {
      * @return A JSON Object with the status code and message.
      */
     @DeleteMapping
-    public @ResponseBody ObjectNode deleteUser(
+    public @ResponseBody ResponseEntity<ObjectNode> deleteUser(
             @RequestHeader(HttpHeaders.AUTHORIZATION) String authentication,
             @RequestParam(value = "id") Long id) {
         return userService.deleteUser(id, authentication);

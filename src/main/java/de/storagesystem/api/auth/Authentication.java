@@ -7,6 +7,8 @@ import com.auth0.jwt.interfaces.DecodedJWT;
 import io.github.cdimascio.dotenv.Dotenv;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.springframework.context.annotation.Bean;
+import org.springframework.stereotype.Component;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -22,16 +24,38 @@ import java.security.spec.PKCS8EncodedKeySpec;
 import java.security.spec.X509EncodedKeySpec;
 import java.util.Map;
 
+@Component
 public class Authentication {
 
     private static final Logger logger = LogManager.getLogger(Authentication.class);
+
+    private final RSAPublicKey publicKey;
+    private final RSAPrivateKey privateKey;
+
+    public Authentication()
+            throws IOException, NoSuchAlgorithmException, InvalidKeySpecException {
+        this.publicKey = getRSAPublicKey(getPathToPublicKey());
+        this.privateKey = getRSAPrivateKey(getPathToPrivateKey());
+    }
+
+    public Authentication(String publicKeyPath, String privateKeyPath)
+            throws IOException, NoSuchAlgorithmException, InvalidKeySpecException {
+        this.publicKey = getRSAPublicKey(publicKeyPath);
+        this.privateKey = getRSAPrivateKey(privateKeyPath);
+    }
+
+    public Authentication(RSAPublicKey publicKey, RSAPrivateKey privateKey) {
+        this.publicKey = publicKey;
+        this.privateKey = privateKey;
+    }
+
 
     /**
      * Extracts the token from the bearer string.
      * @param bearer The bearer string.
      * @return String The token.
      */
-    public static String extractTokenFromBearer(String bearer) {
+    public String extractTokenFromBearer(String bearer) {
         if(bearer == null) return null;
         if(!bearer.startsWith("Bearer ")) return null;
 
@@ -44,9 +68,7 @@ public class Authentication {
      * "PRIVATE_KEY_PATH". The issuer of the token is StorageSystem.
      * @return String - RSA256 JSON Web Token
      */
-    public static String createToken(Map<String, ?> payload) throws IOException, NoSuchAlgorithmException, InvalidKeySpecException {
-        RSAPublicKey publicKey = getRSAPublicKey(getPathToPublicKey());
-        RSAPrivateKey privateKey = getRSAPrivateKey(getPathToPrivateKey());
+    public String createToken(Map<String, ?> payload) throws IOException, NoSuchAlgorithmException, InvalidKeySpecException {
         Dotenv env = Dotenv.load();
 
         Algorithm algorithm = Algorithm.RSA256(publicKey, privateKey);
@@ -67,7 +89,7 @@ public class Authentication {
      * @throws InvalidKeySpecException if the key is invalid
      * @throws JWTVerificationException if token is invalid
      */
-    public static DecodedJWT verifyToken(String token) throws
+    public DecodedJWT verifyToken(String token) throws
             IOException,
             NoSuchAlgorithmException,
             InvalidKeySpecException,
@@ -93,7 +115,7 @@ public class Authentication {
      * @throws NoSuchAlgorithmException if the algorithm is not supported
      * @throws InvalidKeySpecException if the key specification in the file in keyPath is invalid
      */
-    public static RSAPublicKey getRSAPublicKey(String keyPath) throws IOException, NoSuchAlgorithmException, InvalidKeySpecException {
+    public RSAPublicKey getRSAPublicKey(String keyPath) throws IOException, NoSuchAlgorithmException, InvalidKeySpecException {
         X509EncodedKeySpec ks =  new X509EncodedKeySpec(readKeyBytes(keyPath));
         KeyFactory kf = KeyFactory.getInstance("RSA");
         return (RSAPublicKey) kf.generatePublic(ks);
@@ -107,7 +129,7 @@ public class Authentication {
      * @throws NoSuchAlgorithmException if the algorithm is not supported
      * @throws InvalidKeySpecException if the key specification in the file in keyPath is invalid
      */
-    public static RSAPrivateKey getRSAPrivateKey(String keyPath) throws IOException, NoSuchAlgorithmException, InvalidKeySpecException {
+    public RSAPrivateKey getRSAPrivateKey(String keyPath) throws IOException, NoSuchAlgorithmException, InvalidKeySpecException {
         PKCS8EncodedKeySpec ks =  new PKCS8EncodedKeySpec(readKeyBytes(keyPath));
         KeyFactory kf = KeyFactory.getInstance("RSA");
         return (RSAPrivateKey) kf.generatePrivate(ks);
@@ -119,7 +141,7 @@ public class Authentication {
      * @throws IOException if the key file could not be read
      * @return byte[] the bytes of the key file
      */
-    private static byte[] readKeyBytes(String keyPath) throws IOException {
+    private byte[] readKeyBytes(String keyPath) throws IOException {
         Path path = Paths.get(keyPath);
         return Files.readAllBytes(path);
     }
@@ -148,6 +170,9 @@ public class Authentication {
      * @throws IOException If the key could not be stored.
      */
     private static void storeKeyInFile(String path, Key key) throws IOException {
+        File file = new File(path);
+        file.getParentFile().mkdirs();
+
         FileOutputStream out = new FileOutputStream(path);
         out.write(key.getEncoded());
         out.close();

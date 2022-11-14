@@ -6,10 +6,9 @@ import com.auth0.jwt.interfaces.DecodedJWT;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import de.storagesystem.api.auth.Authentication;
-import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Service;
 
 import java.io.IOException;
 import java.security.NoSuchAlgorithmException;
@@ -19,21 +18,24 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 
-@Component
+@Service
 public class UserService {
 
+    private final Authentication auth;
     private final UserRepository userRepository;
 
+
     @Autowired
-    public UserService(UserRepository userRepository) {
+    public UserService(Authentication auth, UserRepository userRepository) {
+        this.auth = auth;
         this.userRepository = userRepository;
     }
 
     public Optional<User> getUser(String authentication) {
-        String token = Authentication.extractTokenFromBearer(authentication);
+        String token = auth.extractTokenFromBearer(authentication);
         ObjectNode response = new ObjectMapper().createObjectNode();
         try {
-            DecodedJWT content = Authentication.verifyToken(token);
+            DecodedJWT content = auth.verifyToken(token);
             Map<String, Claim> claims = content.getClaims();
             if(claims.get("sub").asLong() != null) {
                 return userRepository.findById(claims.get("sub").asLong());
@@ -60,11 +62,11 @@ public class UserService {
      * @param authentication The authentication header/JWT Token.
      * @return A JSON Object with the status code and message.
      */
-    public ObjectNode deleteUser(Long id, String authentication) {
-        String token = Authentication.extractTokenFromBearer(authentication);
+    public ResponseEntity<ObjectNode> deleteUser(Long id, String authentication) {
+        String token = auth.extractTokenFromBearer(authentication);
         ObjectNode response = new ObjectMapper().createObjectNode();
         try {
-            DecodedJWT content = Authentication.verifyToken(token);
+            DecodedJWT content = auth.verifyToken(token);
             Map<String, Claim> claims = content.getClaims();
             if(Objects.equals(claims.get("sub").asLong(), id)) {
                 userRepository.deleteById(id);
@@ -84,7 +86,7 @@ public class UserService {
             response.put("status", "error");
         }
 
-        return response;
+        return ResponseEntity.ok(response);
     }
 
     /**
@@ -147,12 +149,8 @@ public class UserService {
      * @throws InvalidKeySpecException If the key is invalid
      */
     private String createTokenForUser(User user) throws NoSuchAlgorithmException, IOException, InvalidKeySpecException {
-        String publicKeyPath = Authentication.getPathToPublicKey();
-        String privateKeyPath = Authentication.getPathToPrivateKey();
-
-        Authentication.createRSAKey(publicKeyPath, privateKeyPath);
         Map<String, Object> payload = generateUserPayload(user);
-        return Authentication.createToken(payload);
+        return auth.createToken(payload);
     }
 
     /**

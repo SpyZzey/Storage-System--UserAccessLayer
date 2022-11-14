@@ -1,12 +1,16 @@
 package de.storagesystem.api.storage;
 
 import com.sun.istack.NotNull;
+import org.springframework.http.HttpHeaders;
+import org.springframework.web.bind.annotation.RequestHeader;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.multipart.MultipartFile;
 
 import javax.persistence.*;
 
 @Entity
 @Table(uniqueConstraints = @UniqueConstraint(columnNames = {"host", "port"}))
-public class StorageSlaveServer {
+public class StorageServer {
     @Id
     @SequenceGenerator(
             name = "file_sequence",
@@ -32,15 +36,28 @@ public class StorageSlaveServer {
     @NotNull
     private Long totalStorage;
 
-    public StorageSlaveServer() {
+    public StorageServer() {
 
     }
-    public StorageSlaveServer(String name, String host, int port, Long freeStorage, Long totalStorage) {
+    public StorageServer(String name, String host, int port, Long freeStorage, Long totalStorage) {
         this.name = name;
         this.host = host;
         this.port = port;
         this.freeStorage = freeStorage;
         this.totalStorage = totalStorage;
+    }
+
+    public void sendFile(
+            String authentication,
+            String bucketName,
+            String dir,
+            MultipartFile file) {
+    }
+
+    public void deleteFile(
+            Long userId,
+            String bucketName,
+            String filePath) {
     }
 
     public Long id() {

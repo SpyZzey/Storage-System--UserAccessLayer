@@ -5,7 +5,7 @@ import de.storagesystem.api.buckets.Bucket;
 import de.storagesystem.api.buckets.BucketItem;
 import de.storagesystem.api.buckets.directories.BucketDirectory;
 import de.storagesystem.api.buckets.users.BucketUser;
-import de.storagesystem.api.storage.StorageSlaveServer;
+import de.storagesystem.api.storage.StorageServer;
 
 import javax.persistence.*;
 
@@ -13,7 +13,7 @@ import javax.persistence.*;
 public class BucketFile extends BucketItem {
 
     @ManyToOne
-    private StorageSlaveServer storageServer;
+    private StorageServer storageServer;
 
     @NotNull
     private String fileType;
@@ -26,15 +26,18 @@ public class BucketFile extends BucketItem {
     @NotNull
     private String storedPath;
 
+    @NotNull
+    private boolean deleted = false;
+
     protected BucketFile() {
     }
 
-    protected BucketFile(StorageSlaveServer storageServer) {
+    protected BucketFile(StorageServer storageServer) {
         this.storageServer = storageServer;
     }
 
     public BucketFile(
-            StorageSlaveServer storageServer,
+            StorageServer storageServer,
             Bucket bucket,
             BucketDirectory parentDirectory,
             String storedPath,
@@ -83,5 +86,11 @@ public class BucketFile extends BucketItem {
         this.storedName = storedName;
     }
 
+    public boolean wasDeleted() {
+        return deleted;
+    }
 
+    public void setDeleted(boolean deleted) {
+        this.deleted = deleted;
+    }
 }
