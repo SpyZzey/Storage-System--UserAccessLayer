@@ -7,7 +7,9 @@
 </div>
 
 <div>
-    <form method="POST" enctype="multipart/form-data" action="/files/upload/">
+    <form method="POST" enctype="multipart/form-data" action="/api/files/">
+        <input type="hidden" name="bucket" value="TestBucket"/>
+        <input type="hidden" name="folder" value="TestFolder"/>
         <table>
             <tr><td>File to upload:</td><td><input type="file" name="file" /></td></tr>
             <tr><td></td><td><input type="submit" value="Upload" /></td></tr>

@@ -1,7 +1,6 @@
 package de.storagesystem.api;
 
-import de.storagesystem.api.buckets.StorageService;
-import io.github.cdimascio.dotenv.Dotenv;
+import de.storagesystem.api.storage.buckets.BucketService;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.boot.CommandLineRunner;
@@ -11,7 +10,6 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 import javax.annotation.PreDestroy;
-import java.nio.file.Path;
 
 @SpringBootApplication
 public class StorageSystemApplication implements WebMvcConfigurer {
@@ -26,7 +24,7 @@ public class StorageSystemApplication implements WebMvcConfigurer {
     }
 
     @Bean
-    CommandLineRunner init(StorageService storageService) {
+    CommandLineRunner init(BucketService storageService) {
         return (args) -> storageService.init();
     }
 

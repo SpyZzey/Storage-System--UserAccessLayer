@@ -16,24 +16,42 @@ POST localhost:8080/api/buckets/?bucket=TestBucket
 Authorization: Bearer {{auth_token}}
 
 ### Create Directory in bucket
-POST localhost:8080/api/buckets/directory/?bucket=TestBucket&directory=MeinSpeicher
+POST localhost:8080/api/folders/?bucket=TestBucket&folder=MeinSpeicher
 Authorization: Bearer {{auth_token}}
 
 ### Create Directory in directory in bucket
-POST localhost:8080/api/buckets/directory/?bucket=TestBucket&parentDirectory=MeinSpeicher&directory=MehrSpeicher
+POST localhost:8080/api/folders/?bucket=TestBucket&parent=MeinSpeicher&folder=MehrSpeicher
 Authorization: Bearer {{auth_token}}
 
 ### Upload file to bucket
-POST localhost:8080/api/buckets/files/?bucket=TestBucket&dir=MeinSpeicher
-Authorization: Bearer {{auth_token}}
+POST localhost:8080/api/files/?bucket=TestBucket
 Content-Type: multipart/form-data; boundary=boundary
 
 --boundary
-Content-Disposition: form-data; name="file"; filename="testfile.txt"
+Content-Disposition: form-data; name="file", filename="testfile.txt";
 
-// File content
+// The 'input.txt' file contents will be sent as plain text.
 < ./testfile.txt
+--boundary--
 
 ### Download file from bucket and directory
-GET localhost:8080/api/buckets/download/TestBucket/MeinSpeicher/testfile.txt
+GET localhost:8080/api/files/TestBucket/MeinSpeicher/portfolio.sql
 Authorization: Bearer {{auth_token}}
+
+### SEND File
+POST localhost:8080/api/files/ HTTP/1.1
+Content-Type: multipart/form-data; boundary=boundary
+
+--boundary
+Content-Disposition: form-data; name="bucket";"
+
+TestBucket
+--boundary
+Content-Disposition: form-data; name="folder";"
+
+TestBucket
+--boundary
+Content-Disposition: form-data; name="file"; filename="testfile.txt";
+
+// The 'input.txt' file contents will be sent as plain text.
+< ./testfile.txt --boundary--

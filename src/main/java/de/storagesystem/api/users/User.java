@@ -1,7 +1,6 @@
 package de.storagesystem.api.users;
 
 import com.sun.istack.NotNull;
-import de.storagesystem.api.buckets.users.BucketUser;
 
 import javax.crypto.KeyGenerator;
 import javax.crypto.SecretKey;

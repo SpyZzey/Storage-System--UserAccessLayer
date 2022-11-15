@@ -6,6 +6,7 @@ import com.auth0.jwt.interfaces.DecodedJWT;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import de.storagesystem.api.auth.Authentication;
+import de.storagesystem.api.exceptions.UserNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -22,11 +23,10 @@ import java.util.Optional;
 public class UserService {
 
     private final Authentication auth;
-    private final UserRepository userRepository;
-
+    private final UserDAO userRepository;
 
     @Autowired
-    public UserService(Authentication auth, UserRepository userRepository) {
+    public UserService(Authentication auth, UserDAO userRepository) {
         this.auth = auth;
         this.userRepository = userRepository;
     }
@@ -165,5 +165,11 @@ public class UserService {
         payload.put("lastname", user.lastname());
 
         return payload;
+    }
+
+    public Long getUserId(String authentication) {
+        Optional<User> user = getUser(authentication);
+        if(user.isEmpty()) throw new UserNotFoundException();
+        return user.get().id();
     }
 }
