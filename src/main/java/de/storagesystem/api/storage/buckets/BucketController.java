@@ -49,18 +49,5 @@ public class BucketController {
                 "message","Bucket already exists"));
     }
 
-    /*
-    @GetMapping("/")
-    public String listUploadedFiles(
-            @RequestHeader(HttpHeaders.AUTHORIZATION) String authentication,
-            Model model) throws MaxUploadSizeExceededException {
-        model.addAttribute("files", storageService.loadAll(userService.getUserId(authentication)).map(
-                        path -> MvcUriComponentsBuilder.fromMethodName(BucketController.class,
-                                "serveFile", path.getFileName().toString()).build().toUri().toString())
-                .collect(Collectors.toList()));
 
-        return "uploadForm";
-    }
-
-     */
 }

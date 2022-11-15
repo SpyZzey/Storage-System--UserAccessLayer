@@ -7,6 +7,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import de.storagesystem.api.auth.Authentication;
 import de.storagesystem.api.exceptions.UserNotFoundException;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -21,6 +23,8 @@ import java.util.Optional;
 
 @Service
 public class UserService {
+
+    private static final Logger logger = LogManager.getLogger(UserService.class);
 
     private final Authentication auth;
     private final UserDAO userRepository;
@@ -63,6 +67,7 @@ public class UserService {
      * @return A JSON Object with the status code and message.
      */
     public ResponseEntity<ObjectNode> deleteUser(Long id, String authentication) {
+        logger.info("Delete user: " + id);
         String token = auth.extractTokenFromBearer(authentication);
         ObjectNode response = new ObjectMapper().createObjectNode();
         try {
@@ -95,6 +100,7 @@ public class UserService {
      * @return A JSON Object with the status code and the user id.
      */
     public ResponseEntity<ObjectNode> createOrUpdateUser(User user) {
+        logger.info("Creating or updating user: " + user.toString());
         if(userRepository.existsById(user.id())) return updateUser(user);
         return createUser(user);
     }
@@ -105,6 +111,7 @@ public class UserService {
      * @return JSON Object with status code (and user id on success).
      */
     public ResponseEntity<ObjectNode> updateUser(User user) {
+        logger.info("Updating user: " + user.toString());
         ObjectNode response = new ObjectMapper().createObjectNode();
         Optional<User> repoUserOpt = userRepository.findById(user.id());
         if(repoUserOpt.isPresent()) {
@@ -125,6 +132,7 @@ public class UserService {
      * @return JSON Object with status code (and user id and token on success).
      */
     public ResponseEntity<ObjectNode> createUser(User user) {
+        logger.info("Creating user: " + user.toString());
         ObjectNode response = new ObjectMapper().createObjectNode();
         try {
             long id = userRepository.save(user).id();
@@ -149,6 +157,7 @@ public class UserService {
      * @throws InvalidKeySpecException If the key is invalid
      */
     private String createTokenForUser(User user) throws NoSuchAlgorithmException, IOException, InvalidKeySpecException {
+        logger.info("Creating token for user: " + user.toString());
         Map<String, Object> payload = generateUserPayload(user);
         return auth.createToken(payload);
     }

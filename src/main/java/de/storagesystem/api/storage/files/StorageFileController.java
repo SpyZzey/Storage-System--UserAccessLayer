@@ -60,48 +60,11 @@ public class StorageFileController {
                 .body(file);
     }
 
-    @GetMapping("/files/{filename:.+}")
-    @ResponseBody
-    public ResponseEntity<Resource> serveFile(@PathVariable String filename) {
-
-        return ResponseEntity.ok().build();
-    }
-
-
     @GetMapping("/")
-    public String listUploadedFiles(Model model) throws IOException {
-        System.out.println("Test list uploaded files");
-
-        return "uploadForm";
+    public ResponseEntity<Map<String, String>> listUploadedFiles() throws IOException {
+        return ResponseEntity.ok().build() ;
     }
 
-    @PostMapping("/")
-    public String handleFileUpload(
-            @RequestParam("bucket") String bucketName,
-            @RequestParam(value = "folder", required = false) String folder,
-            @RequestParam("file") MultipartFile file,
-                                   RedirectAttributes redirectAttributes) {
-        System.out.println("Test handle file upload");
-
-        redirectAttributes.addFlashAttribute("message",
-                "You successfully uploaded " + file.getOriginalFilename() + " in " + bucketName + "/" + folder + "!");
-
-        return "redirect:/api/files/";
-    }
-
-
-    /*
-
-    @PostMapping(value = "/")
-    public ResponseEntity<Map<String, String>> handleFileUploadByName(
-            @RequestParam("file") MultipartFile file) throws MaxUploadSizeExceededException, StorageEntityNotFoundException, UserNotFoundException {
-        System.out.println("Upload file " + file.getOriginalFilename());
-        return ResponseEntity.ok(Map.of(
-                "status", "ok",
-                "message", "File uploaded"));
-    }
-     */
-    /*
     @PostMapping(value = "/", params = {"bucket", "folder"})
     public ResponseEntity<Map<String, String>> handleFileUploadByName(
             @RequestHeader(HttpHeaders.AUTHORIZATION) String authentication,
@@ -123,6 +86,4 @@ public class StorageFileController {
                     "message","File already exists"));
         }
     }
-
-     */
 }

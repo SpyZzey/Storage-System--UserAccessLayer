@@ -1,5 +1,6 @@
 package de.storagesystem.api.users;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.sun.istack.NotNull;
 
 import javax.crypto.KeyGenerator;
@@ -23,10 +24,13 @@ public class User {
     private long id;
 
     @NotNull
+    @JsonProperty("firstname")
     private String firstname;
     @NotNull
+    @JsonProperty("lastname")
     private String lastname;
     @NotNull
+    @JsonProperty("email")
     private String email;
     @NotNull
     private SecretKey secretKey;
@@ -96,6 +100,16 @@ public class User {
         this.firstname = user.firstname();
         this.lastname = user.lastname();
         this.email = user.email();
+    }
+
+    @Override
+    public String toString() {
+        return "User{" +
+                "id=" + id +
+                ", firstname='" + firstname + '\'' +
+                ", lastname='" + lastname + '\'' +
+                ", email='" + email + '\'' +
+                '}';
     }
 
     @Override

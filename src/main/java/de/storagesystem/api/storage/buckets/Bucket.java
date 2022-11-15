@@ -25,7 +25,7 @@ public class Bucket {
     private Long id;
 
     @NotNull
-    @OneToOne(cascade = CascadeType.ALL)
+    @ManyToOne(cascade = CascadeType.ALL)
     private User creator;
 
     @NotNull
