@@ -1,0 +1,11 @@
+de.storagesystem.api
+de.storagesystem.api.auth
+de.storagesystem.api.cryptography
+de.storagesystem.api.exceptions
+de.storagesystem.api.permissions
+de.storagesystem.api.storage
+de.storagesystem.api.storage.buckets
+de.storagesystem.api.storage.files
+de.storagesystem.api.storage.folders
+de.storagesystem.api.storage.servers
+de.storagesystem.api.users

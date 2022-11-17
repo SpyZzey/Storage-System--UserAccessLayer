@@ -8,10 +8,19 @@ import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 
+/**
+ * @author Simon Brebeck
+ */
 public class FileAESCryptographer implements FileCryptographer {
 
-    private SecretKey secretKey;
-    private Cipher cipher;
+    /**
+     * An {@link SecretKey} instance used for encryption and decryption.
+     */
+    private final SecretKey secretKey;
+    /**
+     * An {@link Cipher} algorithm instance to encrypt and decrypt files.
+     */
+    private final Cipher cipher;
 
     public FileAESCryptographer(SecretKey secretKey, String transformation) throws NoSuchPaddingException, NoSuchAlgorithmException {
         this.secretKey = secretKey;
@@ -19,9 +28,7 @@ public class FileAESCryptographer implements FileCryptographer {
     }
 
     /**
-     * Encryptes a file and stores it at path
-     * @param path
-     * @param contentBytes
+     * {@inheritDoc}
      */
     @Override
     public void encryptFile(String path, byte[] contentBytes) {
@@ -37,6 +44,9 @@ public class FileAESCryptographer implements FileCryptographer {
 
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public byte[] decryptFile(String path) {
         byte[] contentBytes;

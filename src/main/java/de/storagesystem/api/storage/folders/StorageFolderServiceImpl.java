@@ -18,10 +18,26 @@ import java.io.File;
 import java.nio.file.Path;
 import java.util.stream.Stream;
 
+/**
+ * @author Simon Brebeck
+ */
 @Service
 public class StorageFolderServiceImpl extends StorageService implements StorageFolderService {
+
+    /**
+     * The {@link Logger} for this class
+     */
     private static final Logger logger = LogManager.getLogger(BucketServiceImpl.class);
 
+
+    /**
+     * Instantiates a new Storage folder service.
+     * @param storageServerRepository the storage server repository
+     * @param bucketFolderRepository the bucket folder repository
+     * @param storageFileRepository the storage file repository
+     * @param bucketRepository the bucket repository
+     * @param userRepository the user repository
+     */
     public StorageFolderServiceImpl(
             StorageServerDAO storageServerRepository,
             StorageFolderDAO bucketFolderRepository,
@@ -31,6 +47,9 @@ public class StorageFolderServiceImpl extends StorageService implements StorageF
         super(storageServerRepository, bucketFolderRepository, storageFileRepository, bucketRepository, userRepository);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void init() {
         super.init();
@@ -72,11 +91,17 @@ public class StorageFolderServiceImpl extends StorageService implements StorageF
         return false;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Stream<Path> loadAllFolders(Long userId) {
         return null;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Path loadFolderByPath(Long userId, String bucket, Path filePath) {
         return null;

@@ -2,6 +2,7 @@ package integration_tests.users;
 
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import de.storagesystem.api.auth.Authentication;
+import de.storagesystem.api.exceptions.InvalidTokenException;
 import de.storagesystem.api.users.User;
 import de.storagesystem.api.users.UserDAO;
 import de.storagesystem.api.users.UserService;
@@ -30,7 +31,7 @@ public class UserServiceTest {
     private UserService service;
 
     @Test
-    public void createReadAndDeleteUserTest() throws NoSuchAlgorithmException {
+    public void createReadAndDeleteUserTest() throws NoSuchAlgorithmException, InvalidTokenException {
         User user = new User("Test", "User", "test@user.de");
         ResponseEntity<ObjectNode> creationResponseEntity = service.createUser(user);
         assertEquals(creationResponseEntity.getStatusCode(), HttpStatus.OK);

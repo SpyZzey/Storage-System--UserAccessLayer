@@ -7,10 +7,13 @@ import org.springframework.web.multipart.MultipartFile;
 import java.nio.file.Path;
 import java.util.stream.Stream;
 
+/**
+ * @author Simon Brebeck
+ */
 public interface BucketService {
 
     /**
-     * Initializes the storage.
+     * Initializes the storage bucket service.
      */
     void init();
 
@@ -48,7 +51,5 @@ public interface BucketService {
      * @return the path to the file
      */
     Bucket loadByName(Long userId, String bucket);
-
-
 
 }

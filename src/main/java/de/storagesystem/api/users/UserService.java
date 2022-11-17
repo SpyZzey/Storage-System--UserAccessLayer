@@ -6,7 +6,9 @@ import com.auth0.jwt.interfaces.DecodedJWT;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import de.storagesystem.api.auth.Authentication;
+import de.storagesystem.api.exceptions.InvalidTokenException;
 import de.storagesystem.api.exceptions.UserNotFoundException;
+import de.storagesystem.api.storage.folders.StorageFolderController;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,21 +23,45 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 
+/**
+ * @author Simon Brebeck
+ */
 @Service
 public class UserService {
 
+    /**
+     * The {@link Logger} for this class
+     */
     private static final Logger logger = LogManager.getLogger(UserService.class);
 
+    /**
+     * The {@link Authentication} to create and verify the JWT Token
+     */
     private final Authentication auth;
+
+    /**
+     * The {@link UserDAO} user repository
+     */
     private final UserDAO userRepository;
 
+    /**
+     * Instantiates a new User service.
+     * @param auth the {@link Authentication} to create and verify the JWT Token
+     * @param userRepository the user repository
+     */
     @Autowired
     public UserService(Authentication auth, UserDAO userRepository) {
         this.auth = auth;
         this.userRepository = userRepository;
     }
 
-    public Optional<User> getUser(String authentication) {
+    /**
+     * Returns the user information of the sender.
+     * @param authentication The authentication header/JWT Token.
+     * @return The user information of the sender.
+     * @throws InvalidTokenException If the token is invalid.
+     */
+    public Optional<User> getUser(String authentication) throws InvalidTokenException {
         String token = auth.extractTokenFromBearer(authentication);
         ObjectNode response = new ObjectMapper().createObjectNode();
         try {
@@ -44,7 +70,7 @@ public class UserService {
             if(claims.get("sub").asLong() != null) {
                 return userRepository.findById(claims.get("sub").asLong());
             } else {
-                throw new JWTVerificationException("No id in token");
+                throw new InvalidTokenException("No id in token");
             }
         } catch (IOException | NoSuchAlgorithmException | InvalidKeySpecException e) {
             e.printStackTrace();
@@ -66,7 +92,7 @@ public class UserService {
      * @param authentication The authentication header/JWT Token.
      * @return A JSON Object with the status code and message.
      */
-    public ResponseEntity<ObjectNode> deleteUser(Long id, String authentication) {
+    public ResponseEntity<ObjectNode> deleteUser(Long id, String authentication) throws InvalidTokenException{
         logger.info("Delete user: " + id);
         String token = auth.extractTokenFromBearer(authentication);
         ObjectNode response = new ObjectMapper().createObjectNode();
@@ -176,7 +202,14 @@ public class UserService {
         return payload;
     }
 
-    public Long getUserId(String authentication) throws JWTVerificationException {
+    /**
+     * Returns the id of the user with the authentication token.
+     * @param authentication The authentication header/JWT Token.
+     * @return The id of the user.
+     * @throws InvalidTokenException If the token is invalid.
+     * @throws JWTVerificationException If the token cannot be verified.
+     */
+    public Long getUserId(String authentication) throws InvalidTokenException, JWTVerificationException {
         Optional<User> user = getUser(authentication);
         if(user.isEmpty()) throw new UserNotFoundException("User not found");
         return user.get().id();

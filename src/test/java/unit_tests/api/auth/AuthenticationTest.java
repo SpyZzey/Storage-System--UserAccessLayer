@@ -3,6 +3,7 @@ package unit_tests.api.auth;
 import com.auth0.jwt.interfaces.Claim;
 import com.auth0.jwt.interfaces.DecodedJWT;
 import de.storagesystem.api.auth.Authentication;
+import de.storagesystem.api.exceptions.InvalidTokenException;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
@@ -26,7 +27,7 @@ public class AuthenticationTest {
         RSAPublicKey publicKey = auth.getRSAPublicKey(publicKeyPath);
         RSAPrivateKey privateKey = auth.getRSAPrivateKey(privateKeyPath);
 
-        assertDoesNotThrow(() -> auth.createRSAKey(publicKeyPath, privateKeyPath));
+        assertDoesNotThrow(() -> Authentication.createRSAKey(publicKeyPath, privateKeyPath));
         assertNotNull(publicKey);
         assertNotNull(privateKey);
 
@@ -50,6 +51,8 @@ public class AuthenticationTest {
             }
         } catch (IOException | NoSuchAlgorithmException | InvalidKeySpecException e) {
             e.printStackTrace();
+        } catch (InvalidTokenException e) {
+            throw new RuntimeException(e);
         }
     }
 }

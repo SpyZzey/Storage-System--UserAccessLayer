@@ -4,6 +4,7 @@ import com.auth0.jwt.JWT;
 import com.auth0.jwt.algorithms.Algorithm;
 import com.auth0.jwt.exceptions.JWTVerificationException;
 import com.auth0.jwt.interfaces.DecodedJWT;
+import de.storagesystem.api.exceptions.InvalidTokenException;
 import io.github.cdimascio.dotenv.Dotenv;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -24,26 +25,59 @@ import java.security.spec.PKCS8EncodedKeySpec;
 import java.security.spec.X509EncodedKeySpec;
 import java.util.Map;
 
+/**
+ * @author Simon Brebeck
+ */
 @Component
 public class Authentication {
 
     private static final Logger logger = LogManager.getLogger(Authentication.class);
 
+    /**
+     * An {@link RSAPublicKey} instance that is used to verify the signature of the JWT.
+     */
     private final RSAPublicKey publicKey;
+    /**
+     * An {@link RSAPrivateKey} used to sign the JWTs.
+     */
     private final RSAPrivateKey privateKey;
 
+    /**
+     * Creates a new Authentication object.
+     *
+     * @throws IOException if the public or private key file could not be read from the key path stored in .env
+     * @throws NoSuchAlgorithmException if the RSA algorithm is not supported by the system
+     * @throws InvalidKeySpecException if the public or private key file is not a valid RSA key
+     */
     public Authentication()
             throws IOException, NoSuchAlgorithmException, InvalidKeySpecException {
         this.publicKey = getRSAPublicKey(getPathToPublicKey());
         this.privateKey = getRSAPrivateKey(getPathToPrivateKey());
     }
 
+    /**
+     * Creates a new Authentication object with publicKeyPath and
+     * privateKeyPath as paths to the private/public encryption key.
+     *
+     * @param publicKeyPath path to the public key
+     * @param privateKeyPath path to the private key
+     * @throws IOException if the public or private key file could not be read from the  key path stored in .env
+     * @throws NoSuchAlgorithmException if the RSA algorithm is not supported by the system
+     * @throws InvalidKeySpecException if the public or private key file is not a valid RSA key
+     */
     public Authentication(String publicKeyPath, String privateKeyPath)
             throws IOException, NoSuchAlgorithmException, InvalidKeySpecException {
         this.publicKey = getRSAPublicKey(publicKeyPath);
         this.privateKey = getRSAPrivateKey(privateKeyPath);
     }
 
+    /**
+     * Creates a new Authentication object with publicKey and
+     * privateKey as the private/public encryption key.
+     *
+     * @param publicKey public key
+     * @param privateKey private key
+     */
     public Authentication(RSAPublicKey publicKey, RSAPrivateKey privateKey) {
         this.publicKey = publicKey;
         this.privateKey = privateKey;
@@ -52,12 +86,14 @@ public class Authentication {
 
     /**
      * Extracts the token from the bearer string.
+     *
      * @param bearer The bearer string.
+     * @throws InvalidTokenException if the token is invalid
      * @return String The token.
      */
-    public String extractTokenFromBearer(String bearer) {
-        if(bearer == null) return null;
-        if(!bearer.startsWith("Bearer ")) return null;
+    public String extractTokenFromBearer(String bearer) throws InvalidTokenException {
+        if(bearer == null) throw new InvalidTokenException("Bearer is null");
+        if(!bearer.startsWith("Bearer ")) throw new InvalidTokenException("Token is not a bearer token");
 
         return bearer.substring(7);
     }

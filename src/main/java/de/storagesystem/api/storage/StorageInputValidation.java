@@ -1,34 +1,39 @@
 package de.storagesystem.api.storage;
 
-public class StorageInputValidation {
+/**
+ * @author Simon Brebeck
+ */
+public interface StorageInputValidation {
 
-    public static boolean validateBucketName(String bucketName) {
-        if(bucketName == null) return false;
-        return bucketName.length() > 0 && bucketName.length() < 255;
-    }
+    /**
+     * Checks if the given string is a valid name for a bucket.
+     *
+     * @param bucketName The name of the bucket to validate.
+     * @return true if the name is valid, false otherwise.
+     */
+    boolean validateBucketName(String bucketName);
 
-    public static boolean validateFolderPath(String parentFolderPath) {
-        if(parentFolderPath == null) return true;
-        if(parentFolderPath.isEmpty()) return true;
-        if(parentFolderPath.startsWith("/")) return false;
-        if(parentFolderPath.endsWith("/")) return false;
+    /**
+     * Checks if the given string is a valid path for a folder.
+     *
+     * @param folderPath The path of the folder to validate.
+     * @return true if the folder path is valid, false otherwise.
+     */
+    boolean validateFolderPath(String folderPath);
 
-        return parentFolderPath.length() < 1024;
-    }
 
-    public static boolean validateFolderName(String folderName) {
-        if(folderName == null) return false;
-        if(folderName.isEmpty()) return false;
-        if(folderName.contains("/")) return false;
+    /**
+     * Checks if the given string is a valid name for a folder.
+     *
+     * @param folderName The name of the folder to validate.
+     * @return true if the folder name is valid, false otherwise.
+     */
+    boolean validateFolderName(String folderName);
 
-        return folderName.length() < 1024;
-    }
-
-    public static boolean validateFileName(String filename) {
-        if(filename == null) return false;
-        if(filename.isEmpty()) return false;
-        if(filename.contains("/")) return false;
-
-        return filename.length() < 1024;
-    }
+    /**
+     * Checks if the given string is a valid name for a file.
+     * @param filename The name of the file to validate.
+     * @return true if the file name is valid, false otherwise.
+     */
+    boolean validateFileName(String filename);
 }

@@ -23,15 +23,31 @@ import org.springframework.web.multipart.MultipartFile;
 import javax.crypto.NoSuchPaddingException;
 import javax.crypto.SecretKey;
 import java.io.File;
+import java.io.IOException;
 import java.nio.file.Path;
 import java.security.NoSuchAlgorithmException;
 import java.util.UUID;
 import java.util.stream.Stream;
 
+/**
+ * @author Simon Brebeck
+ */
 @Service
 public class StorageFileServiceImpl extends StorageService implements StorageFileService {
+
+    /**
+     * The {@link Logger} for this class
+     */
     private static final Logger logger = LogManager.getLogger(BucketServiceImpl.class);
 
+    /**
+     * Instantiates a new Storage file service.
+     * @param storageServerRepository the storage server repository
+     * @param bucketFolderRepository the bucket folder repository
+     * @param storageFileRepository the storage file repository
+     * @param bucketRepository the bucket repository
+     * @param userRepository the user repository
+     */
     public StorageFileServiceImpl(
             StorageServerDAO storageServerRepository,
             StorageFolderDAO bucketFolderRepository,
@@ -41,6 +57,9 @@ public class StorageFileServiceImpl extends StorageService implements StorageFil
         super(storageServerRepository, bucketFolderRepository, storageFileRepository, bucketRepository, userRepository);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void init() {
         super.init();
@@ -114,16 +133,25 @@ public class StorageFileServiceImpl extends StorageService implements StorageFil
         return false;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Stream<Path> loadAll(Long userId) {
         return null;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Stream<Path> loadAllByPath(Long userId, String searchPath) {
         return null;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Path loadbyPath(Long userId, String bucket, Path filePath) {
         return null;
@@ -143,6 +171,12 @@ public class StorageFileServiceImpl extends StorageService implements StorageFil
         return getStorageFileResource(user, file);
     }
 
+    /**
+     * Decrypts the file represented by the {@link StorageFile} file of a user and returns it as a {@link ByteArrayResource}
+     * @param user the user who owns the file
+     * @param file the file to decrypt and return
+     * @return the decrypted file as a {@link ByteArrayResource}
+     */
     private ByteArrayResource getStorageFileResource(User user, StorageFile file) {
         FileAESCryptographer fileAESCryptographer;
         try {
@@ -155,7 +189,17 @@ public class StorageFileServiceImpl extends StorageService implements StorageFil
         return new ByteArrayResource(fileAESCryptographer.decryptFile(file.storedPath()));
     }
 
-    private void storeEncryptedFileOnDisk(User user, String path, MultipartFile file) throws Exception {
+    /**
+     * Encrypts the {@link MultipartFile} file and stores it on disk at a given path
+     * @param user the user who owns the file
+     * @param path the path where the file should be stored
+     * @param file the file to encrypt and store
+     * @throws NoSuchAlgorithmException if the RSA algorithm is not available
+     * @throws NoSuchPaddingException if the RSA algorithm is not available
+     * @throws IOException if an I/O error occurs
+     */
+    private void storeEncryptedFileOnDisk(User user, String path, MultipartFile file)
+            throws NoSuchPaddingException, NoSuchAlgorithmException, IOException {
         SecretKey secretkey = user.secretKey();
         FileCryptographer fc = new FileAESCryptographer(secretkey, "AES/CBC/PKCS5Padding");
         fc.encryptFile(path, file.getBytes());

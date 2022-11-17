@@ -7,7 +7,11 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.sun.tools.jconsole.JConsoleContext;
 import de.storagesystem.api.auth.Authentication;
+import de.storagesystem.api.exceptions.InvalidTokenException;
+import de.storagesystem.api.storage.folders.StorageFolderController;
 import org.apache.coyote.Response;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
@@ -24,11 +28,27 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 
+/**
+ * @author Simon Brebeck
+ */
 @Controller
 @RequestMapping("/api/user")
 public class UserController {
+
+    /**
+     * The {@link Logger} for this class
+     */
+    private static final Logger logger = LogManager.getLogger(UserService.class);
+
+    /**
+     * The {@link UserService} to access the users
+     */
     private final UserService userService;
 
+    /**
+     * Instantiates a new User controller.
+     * @param userService the user service to access the users
+     */
     @Autowired
     public UserController(UserService userService) {
         this.userService = userService;
@@ -41,7 +61,8 @@ public class UserController {
      * @return
      */
     @GetMapping
-    public @ResponseBody Optional<User> getUser(@RequestHeader(HttpHeaders.AUTHORIZATION) String authentication) {
+    public @ResponseBody Optional<User> getUser(@RequestHeader(HttpHeaders.AUTHORIZATION) String authentication)
+            throws InvalidTokenException {
         return userService.getUser(authentication);
     }
 
@@ -64,7 +85,8 @@ public class UserController {
     @DeleteMapping
     public @ResponseBody ResponseEntity<ObjectNode> deleteUser(
             @RequestHeader(HttpHeaders.AUTHORIZATION) String authentication,
-            @RequestParam(value = "id") Long id) {
+            @RequestParam(value = "id") Long id)
+            throws InvalidTokenException {
         return userService.deleteUser(id, authentication);
     }
 

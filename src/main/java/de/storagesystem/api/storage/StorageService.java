@@ -15,28 +15,83 @@ import java.nio.file.Path;
 import java.util.Optional;
 import java.util.Random;
 
+/**
+ * @author Simon Brebeck
+ */
 public class StorageService {
 
+    /**
+     * The {@link Path} to the root directory of the storage
+     */
     private static Path ROOT;
+
+    /**
+     * The max amount of subpartitions of users in a user-partition
+     */
     private static final int maxSubpartitionsPerPartition = 2;
+
+    /**
+     * The max amount of user storage roots in a subpartition
+     */
     private static final int maxUserRootsPerSubpartition = 2;
 
+    /**
+     * The max amount of folders in a folder
+     */
     private static final int maxNumberOfPartitions = 1000;
+    /**
+     * The max amount of folders in a subfolder
+     */
     private static final int maxNumberOfFilesInPartition = 10000;
+
+    /**
+     * The prefix of the server
+     */
     private static String serverPrefix;
 
+    /**
+     * The {@link UserDAO} user repository
+     */
     @Autowired
     protected final UserDAO userRepository;
+
+    /**
+     * The {@link BucketDAO} bucket repository
+     */
     @Autowired
     protected final BucketDAO bucketRepository;
+
+    /**
+     * The {@link StorageFolderDAO} folder repository
+     */
     @Autowired
     protected final StorageFolderDAO bucketFolderRepository;
+
+    /**
+     * The {@link StorageFileDAO} file repository
+     */
     @Autowired
     protected final StorageFileDAO storageFileRepository;
+
+    /**
+     * The {@link StorageServerDAO} server repository
+     */
     @Autowired
     protected final StorageServerDAO storageServerRepository;
+
+    /**
+     * The current {@link StorageServer}
+     */
     private StorageServer storageServer;
 
+    /**
+     * Instantiates a new Storage service.
+     * @param storageServerRepository the storage server repository
+     * @param bucketFolderRepository the bucket folder repository
+     * @param storageFileRepository the storage file repository
+     * @param bucketRepository the bucket repository
+     * @param userRepository the user repository
+     */
     public StorageService(
             StorageServerDAO storageServerRepository,
             StorageFolderDAO bucketFolderRepository,
@@ -50,6 +105,9 @@ public class StorageService {
         this.userRepository = userRepository;
     }
 
+    /**
+     * Initializes the storage service
+     */
     public void init() {
         Dotenv dotenv = Dotenv.load();
         // Load the storage root path from the .env file
@@ -70,6 +128,11 @@ public class StorageService {
         return path;
     }
 
+    /**
+     * Generate a path where a file can be stored for a user
+     * @param userId The id of the user
+     * @return The path where the file can be stored
+     */
     public String getFileStoragePath(long userId) {
         Random random = new Random(System.currentTimeMillis());
         int partition = random.nextInt(maxNumberOfPartitions);
@@ -79,6 +142,11 @@ public class StorageService {
     }
 
 
+    /**
+     * Generate the path to the user root directory
+     * @param userId The id of the user
+     * @return The path to the user root directory
+     */
     public String getUserStoragePath(long userId) {
         int partition = (int) (userId / (maxUserRootsPerSubpartition * maxSubpartitionsPerPartition)) + 1;
         int subpartition = (int) (userId / maxUserRootsPerSubpartition) + 1;
@@ -86,6 +154,11 @@ public class StorageService {
         return createPartition(path);
     }
 
+    /**
+     * Create a folder and all its parents if it does not exist
+     * @param partitionPath The path to the folder to create
+     * @return The path to the folder
+     */
     public String createPartition(String partitionPath) {
         File file = new File(partitionPath);
         if(!file.isDirectory() && !file.mkdirs()) {
@@ -94,12 +167,19 @@ public class StorageService {
         return partitionPath;
     }
 
+    /**
+     * Get the current {@link StorageServer} and create it if it does not exist
+     * @return The current {@link StorageServer}
+     */
     protected StorageServer getStorageServer() {
         if(storageServer == null) loadOrCreateStorageServer();
         return storageServer;
     }
 
 
+    /**
+     * Load the current {@link StorageServer} or create it if it does not exist
+     */
     private void loadOrCreateStorageServer() {
         // Load storage server from database or create a new one if it does not exist
         Dotenv dotenv = Dotenv.load();
@@ -118,11 +198,18 @@ public class StorageService {
         }
     }
 
-
+    /**
+     * Get the root path of the storage
+     * @return The root path of the storage
+     */
     public String root() {
         return ROOT.toString();
     }
 
+    /**
+     * Get the server prefix
+     * @return The server prefix
+     */
     public static String serverPrefix() {
         return serverPrefix;
     }

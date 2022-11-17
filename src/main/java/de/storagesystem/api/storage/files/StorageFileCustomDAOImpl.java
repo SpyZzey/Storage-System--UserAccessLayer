@@ -10,12 +10,21 @@ import javax.persistence.PersistenceContext;
 import java.nio.file.Path;
 import java.util.Optional;
 
+/**
+ * @author Simon Brebeck
+ */
 @Repository
 public class StorageFileCustomDAOImpl implements StorageFileCustomDAO {
 
+    /**
+     * The {@link EntityManager} used to access the database.
+     */
     @PersistenceContext
     private EntityManager em;
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Optional<StorageFile> findByPath(Bucket bucket, Path path) {
         return em.createQuery("SELECT b FROM StorageFile b WHERE b.bucket.id = :bucketId AND b.path = :path", StorageFile.class)
@@ -25,10 +34,18 @@ public class StorageFileCustomDAOImpl implements StorageFileCustomDAO {
                 .findFirst();
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public boolean exists(Bucket bucket, String parentPath, String filename) {
         return findByPath(bucket, Path.of(parentPath).resolve(filename)).isPresent();
     }
 
+    /**
+     * {@inheritDoc}
+     * @throws StorageEntityNotFoundException if the file does not exist.
+     * @throws UserNotFoundException if the user does not exist.
+     */
     public StorageFile getBucketFileByPath(Bucket bucket, Path filePath)
             throws StorageEntityNotFoundException, UserNotFoundException {
         return findByPath(bucket, filePath)

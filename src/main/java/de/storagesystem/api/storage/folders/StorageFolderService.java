@@ -6,10 +6,13 @@ import org.springframework.web.multipart.MultipartFile;
 import java.nio.file.Path;
 import java.util.stream.Stream;
 
+/**
+ * @author Simon Brebeck
+ */
 public interface StorageFolderService {
 
     /**
-     * Initializes the storage.
+     * Initializes the storage folder service.
      */
     void init();
 

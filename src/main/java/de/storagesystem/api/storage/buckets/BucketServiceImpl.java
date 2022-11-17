@@ -13,11 +13,26 @@ import org.apache.logging.log4j.Logger;
 import org.springframework.stereotype.Service;
 import java.util.stream.Stream;
 
+/**
+ * @author Simon Brebeck
+ */
 @Service
 public class BucketServiceImpl extends StorageService implements BucketService {
 
+    /**
+     * The {@link Logger} for this class
+     */
     private static final Logger logger = LogManager.getLogger(BucketServiceImpl.class);
 
+    /**
+     * Instantiates a new Bucket service.
+     *
+     * @param storageServerRepository the storage server repository
+     * @param bucketFolderRepository the bucket folder repository
+     * @param storageFileRepository the storage file repository
+     * @param bucketRepository the bucket repository
+     * @param userRepository the user repository
+     */
     public BucketServiceImpl(
             StorageServerDAO storageServerRepository,
             StorageFolderDAO bucketFolderRepository,
@@ -72,6 +87,9 @@ public class BucketServiceImpl extends StorageService implements BucketService {
         return null;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Bucket loadByName(Long userId, String bucket) {
         return null;
