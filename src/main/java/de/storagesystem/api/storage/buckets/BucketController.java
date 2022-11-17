@@ -2,7 +2,9 @@ package de.storagesystem.api.storage.buckets;
 
 import de.storagesystem.api.exceptions.StorageEntityAlreadyExistsException;
 import de.storagesystem.api.exceptions.StorageEntityNotFoundException;
+import de.storagesystem.api.exceptions.UserInputValidationException;
 import de.storagesystem.api.exceptions.UserNotFoundException;
+import de.storagesystem.api.storage.StorageInputValidation;
 import de.storagesystem.api.users.UserService;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -38,7 +40,11 @@ public class BucketController {
     public ResponseEntity<Map<String, String>> handleBucketCreation(
             @RequestHeader(HttpHeaders.AUTHORIZATION) String authentication,
             @RequestParam("bucket") String bucketName)
-            throws MaxUploadSizeExceededException, StorageEntityAlreadyExistsException {
+            throws MaxUploadSizeExceededException, StorageEntityAlreadyExistsException, UserInputValidationException {
+        if(!StorageInputValidation.validateBucketName(bucketName))
+            throw new UserInputValidationException("Invalid bucket name");
+
+        logger.info("Creating bucket: " + bucketName);
         boolean created = storageService.createBucket(userService.getUserId(authentication), bucketName);
         if(created) return ResponseEntity.ok(Map.of(
                 "status", "ok",

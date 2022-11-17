@@ -176,9 +176,9 @@ public class UserService {
         return payload;
     }
 
-    public Long getUserId(String authentication) {
+    public Long getUserId(String authentication) throws JWTVerificationException {
         Optional<User> user = getUser(authentication);
-        if(user.isEmpty()) throw new UserNotFoundException();
+        if(user.isEmpty()) throw new UserNotFoundException("User not found");
         return user.get().id();
     }
 }

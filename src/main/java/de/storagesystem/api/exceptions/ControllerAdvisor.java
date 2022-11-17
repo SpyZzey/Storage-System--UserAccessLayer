@@ -11,6 +11,12 @@ import java.util.Map;
 @ControllerAdvice
 public class ControllerAdvisor extends ResponseEntityExceptionHandler {
 
+    @ExceptionHandler(UserInputValidationException.class)
+    public ResponseEntity<Map<String, String>> handleUserInputValidationException(UserInputValidationException e) {
+        return ResponseEntity.badRequest().body(Map.of(
+                "status", "error",
+                "message", e.getMessage()));
+    }
     @ExceptionHandler(StorageEntityNotFoundException.class)
     public ResponseEntity<?> handleStorageFileNotFound(StorageEntityNotFoundException exc) {
         logger.info("Storage Entity was not found");

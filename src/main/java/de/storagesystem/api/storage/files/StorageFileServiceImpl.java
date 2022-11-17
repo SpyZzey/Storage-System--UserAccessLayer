@@ -8,7 +8,7 @@ import de.storagesystem.api.exceptions.UserNotFoundException;
 import de.storagesystem.api.storage.buckets.Bucket;
 import de.storagesystem.api.storage.buckets.BucketDAO;
 import de.storagesystem.api.storage.buckets.BucketServiceImpl;
-import de.storagesystem.api.storage.buckets.StorageService;
+import de.storagesystem.api.storage.StorageService;
 import de.storagesystem.api.storage.folders.StorageFolder;
 import de.storagesystem.api.storage.folders.StorageFolderDAO;
 import de.storagesystem.api.storage.servers.StorageServerDAO;
@@ -82,7 +82,7 @@ public class StorageFileServiceImpl extends StorageService implements StorageFil
 
         try {
             // Create a new file entity on disk
-            String uuidFilename = serverPrefix + UUID.randomUUID();
+            String uuidFilename = serverPrefix() + UUID.randomUUID();
             String storedPath = getFileStoragePath(user.id()) + File.separator + uuidFilename;
             storeEncryptedFileOnDisk(user, storedPath, file);
 

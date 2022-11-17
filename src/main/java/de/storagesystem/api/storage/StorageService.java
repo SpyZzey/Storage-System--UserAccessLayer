@@ -1,6 +1,7 @@
-package de.storagesystem.api.storage.buckets;
+package de.storagesystem.api.storage;
 
 import de.storagesystem.api.exceptions.StorageEntityCreationException;
+import de.storagesystem.api.storage.buckets.BucketDAO;
 import de.storagesystem.api.storage.files.StorageFileDAO;
 import de.storagesystem.api.storage.folders.StorageFolderDAO;
 import de.storagesystem.api.storage.servers.StorageServer;
@@ -22,8 +23,8 @@ public class StorageService {
 
     private static final int maxNumberOfPartitions = 1000;
     private static final int maxNumberOfFilesInPartition = 10000;
+    private static String serverPrefix;
 
-    protected String serverPrefix;
     @Autowired
     protected final UserDAO userRepository;
     @Autowired
@@ -117,8 +118,12 @@ public class StorageService {
         }
     }
 
+
     public String root() {
         return ROOT.toString();
     }
 
+    public static String serverPrefix() {
+        return serverPrefix;
+    }
 }

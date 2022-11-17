@@ -20,7 +20,7 @@ POST localhost:8080/api/folders/?bucket=TestBucket&folder=MeinSpeicher
 Authorization: Bearer {{auth_token}}
 
 ### Create Directory in directory in bucket
-POST localhost:8080/api/folders/?bucket=TestBucket&parent=MeinSpeicher&folder=MehrSpeicher
+POST localhost:8080/api/folders/?bucket=TestBucket&parent=MeinSpeicher&folder=MehrSpeicher%2FNochMehrSpeicher
 Authorization: Bearer {{auth_token}}
 
 ### Upload file to bucket

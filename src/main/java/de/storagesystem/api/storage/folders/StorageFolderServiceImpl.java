@@ -1,10 +1,11 @@
 package de.storagesystem.api.storage.folders;
 
 import de.storagesystem.api.exceptions.UserNotFoundException;
+import de.storagesystem.api.storage.StorageInputValidation;
 import de.storagesystem.api.storage.buckets.Bucket;
 import de.storagesystem.api.storage.buckets.BucketDAO;
 import de.storagesystem.api.storage.buckets.BucketServiceImpl;
-import de.storagesystem.api.storage.buckets.StorageService;
+import de.storagesystem.api.storage.StorageService;
 import de.storagesystem.api.storage.files.StorageFileDAO;
 import de.storagesystem.api.storage.servers.StorageServerDAO;
 import de.storagesystem.api.users.User;

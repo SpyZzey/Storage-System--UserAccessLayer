@@ -1,7 +1,7 @@
 package de.storagesystem.api.storage.folders;
 
-import de.storagesystem.api.storage.buckets.BucketServiceImpl;
-import de.storagesystem.api.storage.buckets.BucketService;
+import de.storagesystem.api.exceptions.UserInputValidationException;
+import de.storagesystem.api.storage.StorageInputValidation;
 import de.storagesystem.api.users.UserService;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -31,18 +31,25 @@ public class StorageFolderController {
         this.storageService = storageFolderService;
         this.userService = userService;
     }
-    @PostMapping(value = "/", params = {"bucket"})
+    @PostMapping(value = "/", params = {"bucket", "folder"})
     public ResponseEntity<Map<String, String>> handleDirectoryCreation(
             @RequestHeader(HttpHeaders.AUTHORIZATION) String authentication,
             @RequestParam("bucket") String bucket,
             @RequestParam(value = "parent", required = false) String parent,
-            @RequestParam("folder") String folder) throws MaxUploadSizeExceededException {
+            @RequestParam("folder") String folder) throws MaxUploadSizeExceededException, UserInputValidationException {
+        if(!StorageInputValidation.validateBucketName(bucket))
+            throw new UserInputValidationException("Invalid bucket name: " + bucket);
+        if(!StorageInputValidation.validateFolderPath(parent))
+            throw new UserInputValidationException("Invalid folder path: " + parent);
+        if(!StorageInputValidation.validateFolderName(folder))
+            throw new UserInputValidationException("Invalid folder name: " + folder);
+
+        logger.info("Creating folder " + folder + " in bucket " + bucket + " with parent " + parent);
         boolean created = storageService.createFolder(userService.getUserId(authentication), bucket, parent, folder);
         if(created) return ResponseEntity.ok(Map.of(
                 "status", "ok",
                 "message", "Folder created"));
-
-        return ResponseEntity.badRequest().body(Map.of(
+        else return ResponseEntity.badRequest().body(Map.of(
                 "status", "error",
                 "message","Folder already exists"));
     }
