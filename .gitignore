@@ -36,3 +36,9 @@ build/
 /keys/jwt_rsa_key.key
 /src/main/resources/.env
 /src/main/resources/log4j2.xml
+/application.log
+/logs/storagesystem-log.log
+/logs/
+/src/test/keys/test_key.key
+/src/test/keys/test_key.pub
+/src/test/httpRequests/user_test2.http
