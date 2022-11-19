@@ -17,21 +17,23 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class FileAESCryptographerTest {
 
+
+    /**
+     * Tests if the encryption and decryption of a file works
+     * @throws NoSuchAlgorithmException if the algorithm is not supported
+     * @throws NoSuchPaddingException if the padding is not supported
+     */
     @Test
-    public void encryptStringAndDecryptToStringTest() {
+    public void encryptStringAndDecryptToStringTest() throws NoSuchAlgorithmException, NoSuchPaddingException {
         String content = "Hello World";
         String decryptedContent = null;
 
-        try {
-            SecretKey secretKey = KeyGenerator.getInstance("AES").generateKey();
-            FileAESCryptographer cryptographer = new FileAESCryptographer(secretKey, "AES/CBC/PKCS5Padding");
-            cryptographer.encryptFile("TestEncryptionDecryption.file", content.getBytes());
+        SecretKey secretKey = KeyGenerator.getInstance("AES").generateKey();
+        FileAESCryptographer cryptographer = new FileAESCryptographer(secretKey, "AES/CBC/PKCS5Padding");
+        cryptographer.encryptFile("TestEncryptionDecryption.file", content.getBytes());
 
-            decryptedContent = new String(cryptographer.decryptFile("TestEncryptionDecryption.file"));
-            assertTrue(new File("TestEncryptionDecryption.file").delete());
-        } catch (NoSuchAlgorithmException | NoSuchPaddingException e) {
-            e.printStackTrace();
-        }
+        decryptedContent = new String(cryptographer.decryptFile("TestEncryptionDecryption.file"));
+        assertTrue(new File("TestEncryptionDecryption.file").delete());
         assertEquals(content, decryptedContent);
     }
 

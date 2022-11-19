@@ -18,18 +18,27 @@ public class StorageInputValidationTest {
         inputValidation = new StorageInputValidationImpl();
     }
 
+    /**
+     * Test if the bucket input validation works
+     */
     @Test
     public void testBucketNameValidation() {
         assertFalse(inputValidation.validateBucketName(""));
         assertFalse(inputValidation.validateBucketName(null));
     }
 
+    /**
+     * Test if the folder path input validation works
+     */
     @Test
     public void testFolderPathValidation() {
         assertFalse(inputValidation.validateFolderPath("/ThisIsNotAValidFolderPath"));
         assertFalse(inputValidation.validateFolderPath("ThisIsAlsoNotAValidFolderPath/"));
     }
 
+    /**
+     * Test if the folder name input validation works
+     */
     @Test
     public void testFolderNameValidation() {
         assertFalse(inputValidation.validateFolderName(""));
@@ -39,6 +48,9 @@ public class StorageInputValidationTest {
         assertFalse(inputValidation.validateFolderName("/ThisIsNotAValidFolderName"));
     }
 
+    /**
+     * Test if the file name input validation works
+     */
     @Test
     public void testFileNameValidation() {
         assertFalse(inputValidation.validateFileName(""));

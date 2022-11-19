@@ -6,9 +6,9 @@ import com.auth0.jwt.interfaces.DecodedJWT;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import de.storagesystem.api.auth.Authentication;
+import de.storagesystem.api.auth.RSAAuthentication;
 import de.storagesystem.api.exceptions.InvalidTokenException;
 import de.storagesystem.api.exceptions.UserNotFoundException;
-import de.storagesystem.api.storage.folders.StorageFolderController;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -46,7 +46,7 @@ public class UserService {
 
     /**
      * Instantiates a new User service.
-     * @param auth the {@link Authentication} to create and verify the JWT Token
+     * @param auth the {@link RSAAuthentication} to create and verify the JWT Token
      * @param userRepository the user repository
      */
     @Autowired
@@ -65,7 +65,7 @@ public class UserService {
         String token = auth.extractTokenFromBearer(authentication);
         ObjectNode response = new ObjectMapper().createObjectNode();
         try {
-            DecodedJWT content = auth.verifyToken(token);
+            DecodedJWT content = ((RSAAuthentication) auth).verifyToken(token);
             Map<String, Claim> claims = content.getClaims();
             if(claims.get("sub").asLong() != null) {
                 return userRepository.findById(claims.get("sub").asLong());
@@ -97,7 +97,7 @@ public class UserService {
         String token = auth.extractTokenFromBearer(authentication);
         ObjectNode response = new ObjectMapper().createObjectNode();
         try {
-            DecodedJWT content = auth.verifyToken(token);
+            DecodedJWT content = ((RSAAuthentication) auth).verifyToken(token);
             Map<String, Claim> claims = content.getClaims();
             if(Objects.equals(claims.get("sub").asLong(), id)) {
                 userRepository.deleteById(id);

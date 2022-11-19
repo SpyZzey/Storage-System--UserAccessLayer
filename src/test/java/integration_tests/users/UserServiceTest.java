@@ -27,9 +27,15 @@ import static org.junit.jupiter.api.Assertions.*;
 @ContextConfiguration(classes = {UserService.class, Authentication.class, UserDAO.class})
 public class UserServiceTest {
 
+    /**
+     * The {@link UserService} to test
+     */
     @Autowired
     private UserService service;
 
+    /**
+     * Test user creation, fetching and deletion.
+     */
     @Test
     public void createReadAndDeleteUserTest() throws NoSuchAlgorithmException, InvalidTokenException {
         User user = new User("Test", "User", "test@user.de");
@@ -53,6 +59,5 @@ public class UserServiceTest {
 
         ObjectNode deletionResponse = deletionResponseEntity.getBody();
         assertNotNull(deletionResponse);
-
     }
 }
