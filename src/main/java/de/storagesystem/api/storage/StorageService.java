@@ -5,9 +5,12 @@ import de.storagesystem.api.storage.buckets.BucketDAO;
 import de.storagesystem.api.storage.files.StorageFileDAO;
 import de.storagesystem.api.storage.folders.StorageFolderDAO;
 import de.storagesystem.api.storage.servers.StorageServer;
+import de.storagesystem.api.storage.servers.StorageServerController;
 import de.storagesystem.api.storage.servers.StorageServerDAO;
 import de.storagesystem.api.users.UserDAO;
 import io.github.cdimascio.dotenv.Dotenv;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import java.io.File;
@@ -19,6 +22,10 @@ import java.util.Random;
  * @author Simon Brebeck
  */
 public class StorageService {
+    /**
+     * The {@link Logger} for this class
+     */
+    private static final Logger logger = LogManager.getLogger(StorageService.class);
 
     /**
      * The {@link Path} to the root directory of the storage
@@ -114,6 +121,17 @@ public class StorageService {
         ROOT = Path.of(dotenv.get("STORAGE_ROOT"));
         // Load server prefix from the .env file
         serverPrefix = dotenv.get("SERVER_PREFIX");
+
+        // Creates server storage folder if it does not exist
+        File file = new File(root());
+        if (file.exists()) return;
+
+        if (file.mkdirs()) {
+            logger.info("Created upload folder");
+        } else {
+            logger.error("Could not create upload folder");
+            throw new StorageEntityCreationException("Could not create upload folder");
+        }
     }
 
     /**
@@ -180,7 +198,7 @@ public class StorageService {
     /**
      * Load the current {@link StorageServer} or create it if it does not exist
      */
-    private void loadOrCreateStorageServer() {
+    protected void loadOrCreateStorageServer() {
         // Load storage server from database or create a new one if it does not exist
         Dotenv dotenv = Dotenv.load();
         String servername = dotenv.get("SERVER_NAME");
@@ -189,12 +207,14 @@ public class StorageService {
         Optional<StorageServer> optStorageServer = storageServerRepository.findStorageServerByIp(host, port);
         if(optStorageServer.isPresent()) {
             storageServer = optStorageServer.get();
+            logger.info("Loaded storage server " + servername + " from database");
         } else {
             File file = new File(root());
             long freeSpace = file.getUsableSpace();
             long totalSpace = file.getTotalSpace();
             storageServer = new StorageServer(servername, host, port, freeSpace, totalSpace);
             storageServerRepository.save(storageServer);
+            logger.info("Created storage server " + servername + " in database");
         }
     }
 

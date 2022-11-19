@@ -1,12 +1,15 @@
 package de.storagesystem.api.storage.servers;
 
 import com.sun.istack.NotNull;
-import org.springframework.http.HttpHeaders;
+import io.github.cdimascio.dotenv.Dotenv;
+import org.springframework.http.*;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.client.RestTemplate;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.persistence.*;
+import java.util.Map;
 
 /**
  * @author Simon Brebeck
@@ -59,6 +62,12 @@ public class StorageServer {
     private Long totalStorage;
 
     /**
+     * The online status of the storage server
+     */
+    @NotNull
+    private boolean online;
+
+    /**
      * Instantiates a new Storage server.
      */
     public StorageServer() {
@@ -80,36 +89,6 @@ public class StorageServer {
         this.freeStorage = freeStorage;
         this.totalStorage = totalStorage;
     }
-
-    /**
-     * Sends a file to the storage server
-     *
-     * @param authentication the authentication token of the user
-     * @param bucketName the name of the bucket to send the file to
-     * @param folderPath the path to the folder to upload the file to
-     * @param file the file to send
-     * TODO: Implement
-     */
-    public void sendFile(
-            String authentication,
-            String bucketName,
-            String folderPath,
-            MultipartFile file) {
-    }
-
-    /**
-     * Deletes a file from the storage server
-     *
-     * @param authentication the authentication token of the user
-     * @param bucketName the name of the bucket to delete the file from
-     * @param filePath the path to the file to delete
-     */
-    public void deleteFile(
-            String authentication,
-            String bucketName,
-            String filePath) {
-    }
-
 
     /**
      * Getter for the id of the storage server
@@ -207,4 +186,11 @@ public class StorageServer {
         this.totalStorage = totalStorage;
     }
 
+    public boolean online() {
+        return online;
+    }
+
+    public void setOnline(boolean online) {
+        this.online = online;
+    }
 }

@@ -24,12 +24,12 @@ POST localhost:8080/api/folders/?bucket=TestBucket&parent=MeinSpeicher&folder=Me
 Authorization: Bearer {{auth_token}}
 
 ### Upload file to bucket
-POST localhost:8080/api/files/?bucket=TestBucket&folder=MeinSpeicher
+POST localhost:8081/api/files/?bucket=TestBucket&folder=MeinSpeicher
 Authorization: Bearer {{auth_token}}
 Content-Type: multipart/form-data; boundary=boundary
 
 --boundary
-Content-Disposition: form-data; name="file"; filename="testfile.txt"
+Content-Disposition: form-data; name="file"; filename="martin.txt"
 
 // File content
 < ./resources/testfile.txt

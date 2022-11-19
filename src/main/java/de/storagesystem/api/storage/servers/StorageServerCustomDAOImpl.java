@@ -30,4 +30,20 @@ public class StorageServerCustomDAOImpl implements StorageServerCustomDAO {
                 .findFirst();
     }
 
+    /**
+     * {@inheritDoc}
+     *
+     * @param freeBytes The amount of free bytes the server should have.
+     * @return an optional containing the {@link StorageServer} with the least
+     * amount of storage available that fulfills the requirements, if it exists.
+     */
+    @Override
+    public Optional<StorageServer> findStorageServerByFreeCapacity(long freeBytes) {
+        return em.createQuery("SELECT s FROM StorageServer s WHERE s.freeStorage >= :freeBytes AND s.online = true ORDER BY s.freeStorage DESC", StorageServer.class)
+                .setParameter("freeBytes", freeBytes)
+                .getResultStream()
+                .findFirst();
+    }
+
+
 }

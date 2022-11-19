@@ -3,16 +3,24 @@ package de.storagesystem.api.exceptions;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.multipart.MaxUploadSizeExceededException;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
 
 import java.util.Map;
+import java.util.Objects;
 
 /**
  * @author Simon Brebeck
  */
 @ControllerAdvice
 public class ControllerAdvisor extends ResponseEntityExceptionHandler {
+
+
+    @ExceptionHandler(HttpClientErrorException.class)
+    public ResponseEntity<Map<String, String>> handleHttpClientErrorException(HttpClientErrorException e) {
+        return ResponseEntity.status(e.getStatusCode()).body(Map.of("message", Objects.requireNonNull(e.getMessage())));
+    }
 
     /**
      * Handles {@link InvalidTokenException} and returns a 401 status code with an error message.

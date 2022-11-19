@@ -162,6 +162,22 @@ public class StorageFile extends StorageItem {
     }
 
     /**
+     * Getter for the storage server where the file is stored physically.
+     * @return the storage server where the file is stored physically.
+     */
+    public StorageServer storageServer() {
+        return storageServer;
+    }
+
+    /**
+     * Setter for the storage server where the file is stored physically.
+     * @param storageServer the storage server where the file is stored physically.
+     */
+    public void setStorageServer(StorageServer storageServer) {
+        this.storageServer = storageServer;
+    }
+
+    /**
      * Getter for state of the file, whether the file has been deleted or not.
      * @return true if the file has been deleted, false if not.
      */

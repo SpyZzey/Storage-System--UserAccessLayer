@@ -11,6 +11,8 @@ import de.storagesystem.api.users.UserDAO;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.stereotype.Service;
+
+import javax.annotation.PostConstruct;
 import java.util.stream.Stream;
 
 /**
@@ -45,6 +47,7 @@ public class BucketServiceImpl extends StorageService implements BucketService {
      * {@inheritDoc}
      */
     @Override
+    @PostConstruct
     public void init() {
         super.init();
     }

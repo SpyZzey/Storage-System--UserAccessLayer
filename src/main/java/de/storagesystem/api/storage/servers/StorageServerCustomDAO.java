@@ -14,4 +14,12 @@ public interface StorageServerCustomDAO {
      * @return an optional containing the server, if it exists.
      */
     Optional<StorageServer> findStorageServerByIp(String host, int port);
+
+    /**
+     * Returns an optional containing a {@link StorageServer} that has free/usable storage capacity and is online, if it exists.
+     * @param freeBytes The amount of free bytes the server should have.
+     * @return an optional containing a server, if it exists.
+     */
+    Optional<StorageServer> findStorageServerByFreeCapacity(long freeBytes);
+
 }
