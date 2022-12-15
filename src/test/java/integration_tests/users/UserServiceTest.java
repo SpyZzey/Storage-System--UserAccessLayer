@@ -53,7 +53,7 @@ public class UserServiceTest {
         User userRead = userFromDB.get();
         assertEquals(userRead, user);
 
-        Long id = userRead.id();
+        Long id = userRead.getId();
         ResponseEntity<ObjectNode> deletionResponseEntity = service.deleteUser(id, authentication);
         assertEquals(deletionResponseEntity.getStatusCode(), HttpStatus.OK);
 

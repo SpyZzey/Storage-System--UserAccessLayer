@@ -7,7 +7,6 @@ import org.springframework.stereotype.Repository;
 
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
-import java.nio.file.Path;
 import java.util.Optional;
 
 /**
@@ -26,10 +25,10 @@ public class StorageFileCustomDAOImpl implements StorageFileCustomDAO {
      * {@inheritDoc}
      */
     @Override
-    public Optional<StorageFile> findByPath(Bucket bucket, Path path) {
+    public Optional<StorageFile> findByPath(Bucket bucket, String path) {
         return em.createQuery("SELECT b FROM StorageFile b WHERE b.bucket.id = :bucketId AND b.path = :path", StorageFile.class)
-                .setParameter("bucketId", bucket.id())
-                .setParameter("path", path.toString())
+                .setParameter("bucketId", bucket.getId())
+                .setParameter("path", path)
                 .getResultStream()
                 .findFirst();
     }
@@ -38,7 +37,7 @@ public class StorageFileCustomDAOImpl implements StorageFileCustomDAO {
      * {@inheritDoc}
      */
     public boolean exists(Bucket bucket, String parentPath, String filename) {
-        return findByPath(bucket, Path.of(parentPath).resolve(filename)).isPresent();
+        return findByPath(bucket, parentPath + "/" + filename).isPresent();
     }
 
     /**
@@ -46,10 +45,10 @@ public class StorageFileCustomDAOImpl implements StorageFileCustomDAO {
      * @throws StorageEntityNotFoundException if the file does not exist.
      * @throws UserNotFoundException if the user does not exist.
      */
-    public StorageFile getBucketFileByPath(Bucket bucket, Path filePath)
+    public StorageFile getBucketFileByPath(Bucket bucket, String path)
             throws StorageEntityNotFoundException, UserNotFoundException {
-        return findByPath(bucket, filePath)
-                .orElseThrow(() -> new StorageEntityNotFoundException("File not found", "File " + filePath));
+        return findByPath(bucket, path)
+                .orElseThrow(() -> new StorageEntityNotFoundException("File not found", "File " + path));
     }
 
 }

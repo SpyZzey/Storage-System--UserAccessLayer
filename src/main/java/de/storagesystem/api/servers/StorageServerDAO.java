@@ -1,7 +1,6 @@
-package de.storagesystem.api.storage.servers;
+package de.storagesystem.api.servers;
 
 import org.springframework.data.repository.CrudRepository;
-import org.springframework.stereotype.Repository;
 
 /**
  * @author Simon Brebeck

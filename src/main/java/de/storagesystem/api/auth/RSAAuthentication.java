@@ -5,10 +5,6 @@ import com.auth0.jwt.algorithms.Algorithm;
 import com.auth0.jwt.exceptions.JWTVerificationException;
 import com.auth0.jwt.interfaces.DecodedJWT;
 import de.storagesystem.api.exceptions.InvalidTokenException;
-import io.github.cdimascio.dotenv.Dotenv;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-import org.springframework.stereotype.Component;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -27,10 +23,7 @@ import java.util.Map;
 /**
  * @author Simon Brebeck
  */
-@Component
 public class RSAAuthentication implements Authentication {
-
-    private static final Logger logger = LogManager.getLogger(RSAAuthentication.class);
 
     /**
      * An {@link RSAPublicKey} instance that is used to verify the signature of the JWT.
@@ -44,35 +37,22 @@ public class RSAAuthentication implements Authentication {
     /**
      * The issuer of the JWT.
      */
-    private String issuer;
-
-    /**
-     * Creates a new Authentication object.
-     *
-     * @throws IOException if the public or private key file could not be read from the key path stored in .env
-     * @throws NoSuchAlgorithmException if the RSA algorithm is not supported by the system
-     * @throws InvalidKeySpecException if the public or private key file is not a valid RSA key
-     */
-    public RSAAuthentication()
-            throws IOException, NoSuchAlgorithmException, InvalidKeySpecException {
-        init();
-        this.publicKey = getPublicKey(getPathToPublicKey());
-        this.privateKey = getPrivateKey(getPathToPrivateKey());
-    }
+    private final String issuer;
 
     /**
      * Creates a new Authentication object with publicKeyPath and
      * privateKeyPath as paths to the private/public encryption key.
      *
+     * @param token_issuer The issuer of the JWT.
      * @param publicKeyPath path to the public key
      * @param privateKeyPath path to the private key
      * @throws IOException if the public or private key file could not be read from the  key path stored in .env
      * @throws NoSuchAlgorithmException if the RSA algorithm is not supported by the system
      * @throws InvalidKeySpecException if the public or private key file is not a valid RSA key
      */
-    public RSAAuthentication(String publicKeyPath, String privateKeyPath)
+    public RSAAuthentication(String token_issuer, String publicKeyPath, String privateKeyPath)
             throws IOException, NoSuchAlgorithmException, InvalidKeySpecException {
-        init();
+        this.issuer = token_issuer;
         this.publicKey = getPublicKey(publicKeyPath);
         this.privateKey = getPrivateKey(privateKeyPath);
     }
@@ -84,19 +64,12 @@ public class RSAAuthentication implements Authentication {
      * @param publicKey public key
      * @param privateKey private key
      */
-    public RSAAuthentication(RSAPublicKey publicKey, RSAPrivateKey privateKey) {
-        init();
+    public RSAAuthentication(String token_issuer, RSAPublicKey publicKey, RSAPrivateKey privateKey) {
+        this.issuer = token_issuer;
         this.publicKey = publicKey;
         this.privateKey = privateKey;
     }
 
-    /**
-     * Initializes the Authentication object.
-     */
-    public void init() {
-        Dotenv dotenv = Dotenv.load();
-        issuer = dotenv.get("TOKEN_ISSUER");
-    }
 
     /**
      * {@inheritDoc}
@@ -131,15 +104,10 @@ public class RSAAuthentication implements Authentication {
      */
     @Override
     public DecodedJWT verifyToken(String token) throws
-            IOException,
-            NoSuchAlgorithmException,
-            InvalidKeySpecException,
             JWTVerificationException {
-
-        Dotenv env = Dotenv.load();
         Algorithm algorithm = Algorithm.RSA256(publicKey, privateKey);
         return JWT.require(algorithm)
-                .withIssuer(env.get("TOKEN_ISSUER"))
+                .withIssuer(issuer)
                 .build()
                 .verify(token);
     }
@@ -174,6 +142,7 @@ public class RSAAuthentication implements Authentication {
         kpg.initialize(2048);
         KeyPair kp = kpg.generateKeyPair();
 
+        // Store the private and public key
         storeKeyInFile(publicKeyPath, kp.getPublic());
         storeKeyInFile(privateKeyPath, kp.getPrivate());
     }
@@ -185,8 +154,12 @@ public class RSAAuthentication implements Authentication {
     @Override
     public void storeKeyInFile(String path, Key key) throws IOException {
         File file = new File(path);
-        file.getParentFile().mkdirs();
+        // Check if the directory exists, if not create it
+        if(!file.getParentFile().isDirectory() && !file.mkdirs()) {
+            throw new IOException("Could not create directory for key file");
+        }
 
+        // Write the key to the file
         FileOutputStream out = new FileOutputStream(path);
         out.write(key.getEncoded());
         out.close();
@@ -203,22 +176,7 @@ public class RSAAuthentication implements Authentication {
         return Files.readAllBytes(path);
     }
 
-    /**
-     * Returns the path to the public key
-     * @return String path to public key
-     */
-    public static String getPathToPublicKey() {
-        Dotenv dotenv = Dotenv.load();
-        return dotenv.get("PATH_PUBLIC_KEY");
+    public String getIssuer() {
+        return issuer;
     }
-
-    /**
-     * Returns the path to the private key
-     * @return String path to private key
-     */
-    public static String getPathToPrivateKey() {
-        Dotenv dotenv = Dotenv.load();
-        return dotenv.get("PATH_PRIVATE_KEY");
-    }
-
 }

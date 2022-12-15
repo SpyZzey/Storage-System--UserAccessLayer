@@ -1,5 +1,5 @@
 ### Send POST request with json body
-POST localhost:8080/api/user/
+POST localhost:8081/api/user/
 Content-Type: application/json
 
 {
@@ -12,19 +12,39 @@ Content-Type: application/json
 %}
 
 ### Create Bucket
-POST localhost:8080/api/buckets/?bucket=TestBucket
+POST localhost:8081/api/buckets/?bucket=TestBucket
+Authorization: Bearer {{auth_token}}
+
+### List Buckets
+GET localhost:8081/api/buckets/
+Authorization: Bearer {{auth_token}}
+
+### List Bucket Info
+GET localhost:8081/api/buckets/TestBucket
+Authorization: Bearer {{auth_token}}
+
+### List folders in bucket
+GET localhost:8081/api/buckets/TestBucket/folders
+Authorization: Bearer {{auth_token}}
+
+### List files in bucket
+GET localhost:8081/api/buckets/TestBucket/files
+Authorization: Bearer {{auth_token}}
+
+### Delete Bucket
+DELETE localhost:8081/api/buckets/TestBucket
 Authorization: Bearer {{auth_token}}
 
 ### Create Directory in bucket
-POST localhost:8080/api/folders/?bucket=TestBucket&folder=MeinSpeicher
+POST localhost:8081/api/folders/TestBucket/?folder=MeinSpeicher
 Authorization: Bearer {{auth_token}}
 
 ### Create Directory in directory in bucket
-POST localhost:8080/api/folders/?bucket=TestBucket&parent=MeinSpeicher&folder=MehrSpeicher%2FNochMehrSpeicher
+POST localhost:8081/api/folders/TestBucket/MeinSpeicher?folder=TestSpeicher
 Authorization: Bearer {{auth_token}}
 
 ### Upload file to bucket
-POST localhost:8081/api/files/?bucket=TestBucket&folder=MeinSpeicher
+POST localhost:8081/api/files/TestBucket
 Authorization: Bearer {{auth_token}}
 Content-Type: multipart/form-data; boundary=boundary
 
@@ -35,5 +55,5 @@ Content-Disposition: form-data; name="file"; filename="martin.txt"
 < ./resources/testfile.txt
 
 ### Download file from bucket and directory
-GET localhost:8080/api/files/TestBucket/MeinSpeicher/testfile.txt
+GET localhost:8081/api/files/TestBucket/MeinSpeicher%2Fmartin.txt
 Authorization: Bearer {{auth_token}}

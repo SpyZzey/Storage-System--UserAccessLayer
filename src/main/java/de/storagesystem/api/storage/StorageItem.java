@@ -3,11 +3,9 @@ package de.storagesystem.api.storage;
 import com.sun.istack.NotNull;
 import de.storagesystem.api.storage.buckets.Bucket;
 import de.storagesystem.api.storage.folders.StorageFolder;
-import de.storagesystem.api.users.BucketUser;
+import de.storagesystem.api.users.User;
 
 import javax.persistence.*;
-import java.io.File;
-import java.nio.file.Path;
 
 /**
  * @author Simon Brebeck
@@ -57,11 +55,11 @@ public class StorageItem {
     private String name;
 
     /**
-     * The {@link BucketUser} who created the storage item
+     * The {@link User} who created the storage item
      */
     @NotNull
-    @ManyToOne(cascade = CascadeType.ALL)
-    private BucketUser creator;
+    @ManyToOne
+    private User creator;
 
 
     /**
@@ -74,39 +72,20 @@ public class StorageItem {
     /**
      * Instantiates a new Storage item.
      *
-     * @param bucket the bucket where the storage item is located
      * @param originalName the original name of the storage item
-     * @param creator the {@link BucketUser} who created the storage item
+     * @param creator the {@link User} who created the storage item
      */
-    public StorageItem(Bucket bucket, String originalName, BucketUser creator) {
-        this.parent = null;
+    public StorageItem(String originalName, User creator) {
         this.name = originalName;
-        this.bucket = bucket;
         this.creator = creator;
-        this.path = Path.of(originalName).toString();
-    }
-
-    /**
-     * Instantiates a new Storage item.
-     *
-     * @param bucket the bucket where the storage item is located
-     * @param parent the {@link StorageFolder} where the storage item is located
-     * @param originalName the original name of the storage item
-     * @param creator the {@link BucketUser} who created the storage item
-     */
-    public StorageItem(Bucket bucket, StorageFolder parent, String originalName, BucketUser creator) {
-        this.name = originalName;
-        this.bucket = bucket;
-        this.parent = parent;
-        this.creator = creator;
-        this.path = Path.of((parent != null ? parent.path() : File.separator)).resolve(originalName).toString();
+        this.path = "/" + originalName;
     }
 
     /**
      * Getter for the id of the storage item
      * @return the id of the storage item
      */
-    public Long id() {
+    public Long getId() {
         return id;
     }
 
@@ -122,7 +101,7 @@ public class StorageItem {
      * Getter for the path of the storage item
      * @return the path of the storage item
      */
-    public String path() {
+    public String getPath() {
         return path;
     }
 
@@ -138,7 +117,7 @@ public class StorageItem {
      * Getter for the originalName of the storage item
      * @return the originalName of the storage item
      */
-    public String originalName() {
+    public String getOriginalName() {
         return name;
     }
 
@@ -151,19 +130,19 @@ public class StorageItem {
     }
 
     /**
-     * Getter for the {@link BucketUser} who created the storage item
-     * @return the {@link BucketUser} who created the storage item
+     * Getter for the {@link User} who created the storage item
+     * @return the {@link User} who created the storage item
      */
-    public BucketUser creator() {
+    public User getCreator() {
         return creator;
     }
 
 
     /**
-     * Setter for the {@link BucketUser} who created the storage item
-     * @param creator the new {@link BucketUser} who created the storage item
+     * Setter for the {@link User} who created the storage item
+     * @param creator the new {@link User} who created the storage item
      */
-    public void setCreator(BucketUser creator) {
+    public void setCreator(User creator) {
         this.creator = creator;
     }
 
@@ -171,7 +150,7 @@ public class StorageItem {
      * Getter for the {@link Bucket} where the storage item is located
      * @return the {@link Bucket} where the storage item is located
      */
-    public Bucket bucket() {
+    public Bucket getBucket() {
         return bucket;
     }
 
@@ -187,7 +166,7 @@ public class StorageItem {
      * Getter for the {@link StorageFolder} where the storage item is located
      * @return the {@link StorageFolder} where the storage item is located
      */
-    public StorageFolder parent() {
+    public StorageFolder getParent() {
         return parent;
     }
 
@@ -196,7 +175,7 @@ public class StorageItem {
      * @param parent the new {@link StorageFolder} where the storage item is located
      */
     public void setParent(StorageFolder parent) {
-        this.path = Path.of((parent != null ? parent.path() : "")).resolve(name).toString();
+        this.path = (parent != null ? parent.getPath() : "") + "/" + name;
         this.parent = parent;
     }
 }

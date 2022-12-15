@@ -7,6 +7,7 @@ import java.util.List;
  * @author Simon Brebeck
  */
 @Entity
+@Table(name = "roles")
 public class Role {
 
     /**
@@ -54,7 +55,7 @@ public class Role {
      * Getter for the list of privileges that are assigned to this role.
      * @return the list of privileges that are assigned to this role.
      */
-    public List<Privilege> privileges() {
+    public List<Privilege> getPrivileges() {
         return privileges;
     }
 

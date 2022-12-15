@@ -1,21 +1,16 @@
-package de.storagesystem.api.storage.servers;
+package de.storagesystem.api.servers;
 
 import com.sun.istack.NotNull;
-import io.github.cdimascio.dotenv.Dotenv;
-import org.springframework.http.*;
-import org.springframework.web.bind.annotation.RequestHeader;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.client.RestTemplate;
-import org.springframework.web.multipart.MultipartFile;
 
 import javax.persistence.*;
-import java.util.Map;
 
 /**
  * @author Simon Brebeck
  */
 @Entity
-@Table(uniqueConstraints = @UniqueConstraint(columnNames = {"host", "port"}))
+@Table(
+        name = "storage_servers",
+        uniqueConstraints = @UniqueConstraint(columnNames = {"host", "port"}))
 public class StorageServer {
 
     /**
@@ -94,7 +89,7 @@ public class StorageServer {
      * Getter for the id of the storage server
      * @return the id of the storage server
      */
-    public Long id() {
+    public Long getId() {
         return id;
     }
 
@@ -110,7 +105,7 @@ public class StorageServer {
      * Getter for the name of the storage server
      * @return the name of the storage server
      */
-    public String name() {
+    public String getName() {
         return name;
     }
 
@@ -126,7 +121,7 @@ public class StorageServer {
      * Getter for the host of the storage server
      * @return the host of the storage server
      */
-    public String host() {
+    public String getHost() {
         return host;
     }
 
@@ -142,7 +137,7 @@ public class StorageServer {
      * Getter for the port of the storage server
      * @return the port of the storage server
      */
-    public int port() {
+    public int getPort() {
         return port;
     }
 
@@ -158,7 +153,7 @@ public class StorageServer {
      * Getter for the amount of free storage space on the storage server
      * @return the amount of free storage space on the storage server
      */
-    public Long freeStorage() {
+    public Long getFreeStorage() {
         return freeStorage;
     }
 
@@ -174,7 +169,7 @@ public class StorageServer {
      * Getter for the amount of total amount of storage space on the storage server
      * @return the amount of total amount of storage space on the storage server
      */
-    public Long totalStorage() {
+    public Long getTotalStorage() {
         return totalStorage;
     }
 
@@ -186,7 +181,7 @@ public class StorageServer {
         this.totalStorage = totalStorage;
     }
 
-    public boolean online() {
+    public boolean isOnline() {
         return online;
     }
 

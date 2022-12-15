@@ -9,12 +9,14 @@ import de.storagesystem.api.auth.Authentication;
 import de.storagesystem.api.auth.RSAAuthentication;
 import de.storagesystem.api.exceptions.InvalidTokenException;
 import de.storagesystem.api.exceptions.UserNotFoundException;
+import de.storagesystem.api.properties.StorageServerConfigProperty;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
+import javax.annotation.PostConstruct;
 import java.io.IOException;
 import java.security.NoSuchAlgorithmException;
 import java.security.spec.InvalidKeySpecException;
@@ -37,22 +39,33 @@ public class UserService {
     /**
      * The {@link Authentication} to create and verify the JWT Token
      */
-    private final Authentication auth;
+    private Authentication auth;
 
     /**
      * The {@link UserDAO} user repository
      */
     private final UserDAO userRepository;
 
+    private final StorageServerConfigProperty storageServerConfigProperties;
+
     /**
      * Instantiates a new User service.
-     * @param auth the {@link RSAAuthentication} to create and verify the JWT Token
      * @param userRepository the user repository
      */
     @Autowired
-    public UserService(Authentication auth, UserDAO userRepository) {
-        this.auth = auth;
+    public UserService(
+            StorageServerConfigProperty storageServerConfigProperties,
+            UserDAO userRepository) {
         this.userRepository = userRepository;
+        this.storageServerConfigProperties = storageServerConfigProperties;
+    }
+
+    @PostConstruct
+    public void init() throws IOException, NoSuchAlgorithmException, InvalidKeySpecException {
+        String issuer = storageServerConfigProperties.getStorage().getIssuer();
+        String publicKeyPath = storageServerConfigProperties.getStorage().getPublicKey();
+        String privateKeyPath = storageServerConfigProperties.getStorage().getPrivateKey();
+        this.auth = new RSAAuthentication(issuer, publicKeyPath, privateKeyPath);
     }
 
     /**
@@ -72,10 +85,6 @@ public class UserService {
             } else {
                 throw new InvalidTokenException("No id in token");
             }
-        } catch (IOException | NoSuchAlgorithmException | InvalidKeySpecException e) {
-            e.printStackTrace();
-            response.removeAll();
-            response.put("status", "internal_error");
         } catch (JWTVerificationException e) {
             e.printStackTrace();
             response.removeAll();
@@ -107,10 +116,6 @@ public class UserService {
                 response.put("status", "error");
                 response.put("message", "You are not allowed to delete users.");
             }
-        } catch (IOException | NoSuchAlgorithmException | InvalidKeySpecException e) {
-            e.printStackTrace();
-            response.removeAll();
-            response.put("status", "internal_error");
         } catch (JWTVerificationException e) {
             e.printStackTrace();
             response.removeAll();
@@ -127,7 +132,7 @@ public class UserService {
      */
     public ResponseEntity<ObjectNode> createOrUpdateUser(User user) {
         logger.info("Creating or updating user: " + user.toString());
-        if(userRepository.existsById(user.id())) return updateUser(user);
+        if(userRepository.existsById(user.getId())) return updateUser(user);
         return createUser(user);
     }
 
@@ -139,12 +144,12 @@ public class UserService {
     public ResponseEntity<ObjectNode> updateUser(User user) {
         logger.info("Updating user: " + user.toString());
         ObjectNode response = new ObjectMapper().createObjectNode();
-        Optional<User> repoUserOpt = userRepository.findById(user.id());
+        Optional<User> repoUserOpt = userRepository.findById(user.getId());
         if(repoUserOpt.isPresent()) {
             User repoUser = repoUserOpt.get();
             repoUser.update(user);
             response.put("status", "ok");
-            response.put("userId", repoUser.id());
+            response.put("userId", repoUser.getId());
         } else {
             response.put("status", "error");
         }
@@ -161,7 +166,7 @@ public class UserService {
         logger.info("Creating user: " + user.toString());
         ObjectNode response = new ObjectMapper().createObjectNode();
         try {
-            long id = userRepository.save(user).id();
+            long id = userRepository.save(user).getId();
             String token = createTokenForUser(user);
             response.put("status", "ok");
             response.put("userId", id);
@@ -195,9 +200,9 @@ public class UserService {
      */
     private Map<String, Object> generateUserPayload(User user) {
         Map<String, Object> payload = new HashMap<>();
-        payload.put("sub", user.id());
-        payload.put("firstname", user.firstname());
-        payload.put("lastname", user.lastname());
+        payload.put("sub", user.getId());
+        payload.put("firstname", user.getFirstname());
+        payload.put("lastname", user.getLastname());
 
         return payload;
     }
@@ -212,6 +217,6 @@ public class UserService {
     public Long getUserId(String authentication) throws InvalidTokenException, JWTVerificationException {
         Optional<User> user = getUser(authentication);
         if(user.isEmpty()) throw new UserNotFoundException("User not found");
-        return user.get().id();
+        return user.get().getId();
     }
 }

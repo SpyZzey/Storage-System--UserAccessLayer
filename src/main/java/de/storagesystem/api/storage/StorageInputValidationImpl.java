@@ -21,7 +21,7 @@ public class StorageInputValidationImpl implements StorageInputValidation {
     public boolean validateFolderPath(String folderPath) {
         if(folderPath == null) return true;
         if(folderPath.isEmpty()) return true;
-        if(folderPath.startsWith("/")) return false;
+        if(folderPath.startsWith("/")) return true;
         if(folderPath.endsWith("/")) return false;
 
         return folderPath.length() < 1024;
@@ -49,5 +49,17 @@ public class StorageInputValidationImpl implements StorageInputValidation {
         if(filename.contains("/")) return false;
 
         return filename.length() < 1024;
+    }
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public boolean validateFilePath(String filePath) {
+        if(filePath == null) return false;
+        if(filePath.isEmpty()) return false;
+        if(filePath.startsWith("/")) return false;
+        if(filePath.endsWith("/")) return false;
+
+        return filePath.length() < 2048;
     }
 }
