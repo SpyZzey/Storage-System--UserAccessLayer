@@ -36,20 +36,15 @@ public interface StorageFolderService {
      */
     ResponseEntity<ObjectNode> deleteFolder(Long userId, String bucketName, String directoryPath);
 
-
     /**
-     * Loads all folders from a user.
-     * @param userId    The id of the user.
-     * @return Stream of paths to the files
+     * Load the folders of a parent folder or bucket from a user.
+     * @param userId The id of the user.
+     * @param bucket The name of the bucket.
+     * @param pathToParent The path of the parent folder.
+     * @param page The page to load.
+     * @param limit The limit of folders to load per page.
      */
-    ResponseEntity<ObjectNode> loadAllFolders(Long userId);
+    ResponseEntity<ObjectNode> loadFolders(Long userId, String bucket, String pathToParent, int page, int limit);
 
-    /**
-     * Loads a folder from a user.
-     * @param userId    The id of the user.
-     * @param filePath  The Path of the file to load
-     * @return the path to the file
-     */
-    ResponseEntity<ObjectNode> loadFolderByPath(Long userId, String bucket, Path filePath);
 
 }

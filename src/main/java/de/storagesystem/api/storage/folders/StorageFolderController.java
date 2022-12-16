@@ -1,8 +1,7 @@
 package de.storagesystem.api.storage.folders;
 
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import de.storagesystem.api.exceptions.InvalidTokenException;
-import de.storagesystem.api.exceptions.UserInputValidationException;
+import de.storagesystem.api.exceptions.*;
 import de.storagesystem.api.storage.StorageInputValidation;
 import de.storagesystem.api.storage.StorageInputValidationImpl;
 import de.storagesystem.api.users.UserService;
@@ -52,11 +51,12 @@ public class StorageFolderController {
 
     /**
      * Creates a new folder in the given bucket under a given parent folder
+     *
      * @param authentication the authentication token
      * @param bucket the bucket to create the folder in
      * @param relativePath the path to the parent folder to create the folder in
      * @param folder the name of the folder to create
-     * @return the response as a {@link Map<String, String>}
+     * @return the response as a {@link ResponseEntity<ObjectNode>}
      * @throws MaxUploadSizeExceededException if the upload size exceeds the maximum upload size
      * @throws UserInputValidationException if the folder path or bucket-/foldername is invalid
      * @throws InvalidTokenException if the token is invalid
@@ -67,19 +67,22 @@ public class StorageFolderController {
             @PathVariable("bucket") String bucket,
             @PathVariable(value = "relativePath", required = false) String relativePath,
             @RequestParam("folder") String folder)
-            throws MaxUploadSizeExceededException,
+            throws
+            StorageEntityNotFoundException,
+            StorageEntityCreationException,
+            UserNotFoundException,
             UserInputValidationException,
             InvalidTokenException {
-        String pathToParent = (relativePath == null) ? "/" + bucket : "/" + bucket + "/" + relativePath;
 
         StorageInputValidation inputValidation = new StorageInputValidationImpl();
         if(!inputValidation.validateBucketName(bucket))
             throw new UserInputValidationException("Invalid bucket name: " + bucket);
-        if(!inputValidation.validateFolderPath(pathToParent))
-            throw new UserInputValidationException("Invalid folder path: " + pathToParent);
+        if(!inputValidation.validateFolderPath(relativePath))
+            throw new UserInputValidationException("Invalid folder path: " + relativePath);
         if(!inputValidation.validateFolderName(folder))
             throw new UserInputValidationException("Invalid folder name: " + folder);
 
+        String pathToParent = (relativePath == null) ? "/" + bucket : "/" + bucket + "/" + relativePath;
         logger.info("Creating folder " + folder + " in folder " + pathToParent);
         return storageService.createFolder(
                 userService.getUserId(authentication),
@@ -88,15 +91,102 @@ public class StorageFolderController {
                 folder);
     }
 
+    /**
+     * Creates a new folder in the given bucket
+     *
+     * @param authentication the authentication token
+     * @param bucket the bucket to create the folder in
+     * @param folder the name of the folder to create
+     * @return the response as a {@link ResponseEntity<ObjectNode>}
+     * @throws StorageEntityNotFoundException if the bucket or parent folder does not exist
+     * @throws StorageEntityCreationException if the folder could not be created
+     * @throws UserNotFoundException if the user does not exist
+     * @throws UserInputValidationException if the folder path or bucket-/foldername is invalid
+     * @throws InvalidTokenException if the token is invalid
+     */
     @PostMapping(value = "/{bucket}")
     public ResponseEntity<ObjectNode> handleDirectoryCreation(
             @RequestHeader(HttpHeaders.AUTHORIZATION) String authentication,
             @PathVariable("bucket") String bucket,
             @RequestParam("folder") String folder)
-            throws MaxUploadSizeExceededException,
+            throws
+            StorageEntityNotFoundException,
+            StorageEntityCreationException,
+            UserNotFoundException,
             UserInputValidationException,
             InvalidTokenException {
         return handleDirectoryCreation(authentication, bucket, null, folder);
+    }
+
+
+    /**
+     * Lists all folders inside a given folder
+     * @param authentication the authentication token
+     * @param bucketName the bucket to list the folders in
+     * @param relativePath the path to the parent folder to list the folders in
+     * @param page the page to list
+     * @param limit the limit of folders to list
+     * @return the response as a {@link ResponseEntity<ObjectNode>}
+     * @throws StorageEntityNotFoundException if the bucket or parent folder does not exist
+     * @throws StorageEntityCreationException if the folder could not be created
+     * @throws UserNotFoundException if the user does not exist
+     * @throws UserInputValidationException if the folder path or bucket-/foldername is invalid
+     * @throws InvalidTokenException if the token is invalid
+     */
+    @GetMapping(value = "/{bucketName}/{relativePath}")
+    public ResponseEntity<ObjectNode> handleFolderList(
+            @RequestHeader(HttpHeaders.AUTHORIZATION) String authentication,
+            @PathVariable String bucketName,
+            @PathVariable(value = "relativePath", required = false) String relativePath,
+            @RequestParam(value = "page", defaultValue = "0") int page,
+            @RequestParam(value = "limit", defaultValue = "100") int limit)
+            throws
+            StorageEntityNotFoundException,
+            StorageEntityCreationException,
+            UserNotFoundException,
+            UserInputValidationException,
+            InvalidTokenException {
+
+        // Validate user input
+        StorageInputValidation inputValidation = new StorageInputValidationImpl();
+        if(!inputValidation.validateBucketName(bucketName))
+            throw new UserInputValidationException("Invalid bucket name");
+        if(page < 0 || limit < 0)
+            throw new IllegalArgumentException("Page and limit must be greater than 0");
+        if(limit > 100)
+            throw new IllegalArgumentException("Cannot get more than 100 buckets at once");
+
+        String pathToParent = (relativePath == null) ? "/" + bucketName : "/" + bucketName + "/" + relativePath;
+        logger.info("Getting folder list of folder: " + pathToParent);
+        return storageService.loadFolders(userService.getUserId(authentication), bucketName, pathToParent, page, limit);
+    }
+
+     /**
+     * Lists all folders inside a given folder
+     * @param authentication the authentication token
+     * @param bucketName the bucket to list the folders in
+     * @param page the page to list
+     * @param limit the limit of folders to list
+     * @return the response as a {@link ResponseEntity<ObjectNode>}
+     * @throws StorageEntityNotFoundException if the bucket or parent folder does not exist
+     * @throws StorageEntityCreationException if the folder could not be created
+     * @throws UserNotFoundException if the user does not exist
+     * @throws UserInputValidationException if the folder path or bucket-/foldername is invalid
+     * @throws InvalidTokenException if the token is invalid
+     */
+    @GetMapping(value = "/{bucketName}")
+    public ResponseEntity<ObjectNode> handleFolderList(
+            @RequestHeader(HttpHeaders.AUTHORIZATION) String authentication,
+            @PathVariable String bucketName,
+            @RequestParam(value = "page", defaultValue = "0") int page,
+            @RequestParam(value = "limit", defaultValue = "100") int limit)
+            throws
+            StorageEntityNotFoundException,
+            StorageEntityCreationException,
+            UserNotFoundException,
+            UserInputValidationException,
+            InvalidTokenException {
+        return handleFolderList(authentication, bucketName, null, page, limit);
     }
 
 }

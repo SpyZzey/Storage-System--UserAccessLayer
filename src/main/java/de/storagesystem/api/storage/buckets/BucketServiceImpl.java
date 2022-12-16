@@ -16,6 +16,7 @@ import de.storagesystem.api.users.User;
 import de.storagesystem.api.users.UserDAO;
 import de.storagesystem.api.util.ResponseBuilder;
 import de.storagesystem.api.util.ResponseState;
+import de.storagesystem.api.util.Util;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -100,7 +101,8 @@ public class BucketServiceImpl extends StorageService implements BucketService {
      * {@inheritDoc}
      */
     @Override
-    public ResponseEntity<ObjectNode> deleteBucket(Long userId, String bucketName) {
+    public ResponseEntity<ObjectNode> deleteBucket(Long userId, String bucketName)
+            throws UserNotFoundException {
         // Fetch the user from the database, throw an exception if the user does not exist
         User user = userRepository.findById(userId).orElseThrow(() -> new UserNotFoundException("User not found"));
 
@@ -125,7 +127,8 @@ public class BucketServiceImpl extends StorageService implements BucketService {
      * {@inheritDoc}
      */
     @Override
-    public ResponseEntity<ObjectNode> loadPage(Long userId, int page, int limit) {
+    public ResponseEntity<ObjectNode> loadPage(Long userId, int page, int limit)
+            throws UserNotFoundException {
         // Fetch the user from the database, throw an exception if the user does not exist
         User user = userRepository.findById(userId).orElseThrow(() -> new UserNotFoundException("User not found"));
 
@@ -134,8 +137,8 @@ public class BucketServiceImpl extends StorageService implements BucketService {
 
         // Fetch the total amount of buckets
         long totalBucketsByUser = bucketRepository.countBucketsByUser(user);
-        long totalPages = calculateTotalPages(totalBucketsByUser, limit);
-        int bucketCount = calculateItemCount(totalPages, totalBucketsByUser, page, limit);
+        long totalPages = Util.calculateTotalPages(totalBucketsByUser, limit);
+        int bucketCount = Util.calculateItemCount(totalPages, totalBucketsByUser, page, limit);
 
         // Create a new response object
         ObjectNode response = new ResponseBuilder()
@@ -156,7 +159,8 @@ public class BucketServiceImpl extends StorageService implements BucketService {
      * {@inheritDoc}
      */
     @Override
-    public ResponseEntity<ObjectNode> loadBucketInfo(Long userId, String bucketName) {
+    public ResponseEntity<ObjectNode> loadBucketInfo(Long userId, String bucketName)
+            throws UserNotFoundException, StorageEntityNotFoundException {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new UserNotFoundException("User not found"));
         Bucket bucket = bucketRepository.findByName(user, bucketName)
@@ -171,73 +175,5 @@ public class BucketServiceImpl extends StorageService implements BucketService {
         return ResponseEntity.ok(response);
     }
 
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public ResponseEntity<ObjectNode> loadBucketFolders(Long userId, String bucketName, int page, int limit) {
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new UserNotFoundException("User not found"));
-        Bucket bucket = bucketRepository.findByName(user, bucketName)
-                .orElseThrow(() -> new StorageEntityNotFoundException("Bucket not found"));
-
-        logger.info("Load folder page " + page + " with limit " + limit
-                + " of bucket " + bucketName + " for user " + user.getFirstname() + " " + user.getLastname());
-
-        // Fetch all folders of a bucket
-        List<StorageFolder> folders = bucket.getRootFolder().getFolders();
-        ObjectNode response = createBucketContentResponse(folders, page, limit);
-        return ResponseEntity.ok(response);
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public ResponseEntity<ObjectNode> loadBucketFiles(Long userId, String bucketName, int page, int limit) {
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new UserNotFoundException("User not found"));
-        Bucket bucket = bucketRepository.findByName(user, bucketName)
-                .orElseThrow(() -> new StorageEntityNotFoundException("Bucket not found"));
-
-        logger.info("Load file page " + page + " with limit " + limit
-                + " of bucket " + bucketName + " for user " + user.getFirstname() + " " + user.getLastname());
-
-        // Fetch all files of a bucket
-        List<StorageFile> files = bucket.getRootFolder().getFiles();
-        ObjectNode response = createBucketContentResponse(files, page, limit);
-        return ResponseEntity.ok(response);
-    }
-
-    private <T extends StorageItem> ObjectNode createBucketContentResponse(List<T> content, int page, int limit) {
-        Stream<T> fileStream = content.stream()
-                .sorted(Comparator.comparing(T::getOriginalName))
-                .skip((long) page * limit)
-                .limit(limit);
-
-        long totalItems = content.size();
-        long totalPages = calculateTotalPages(totalItems, limit);
-        int itemCount = calculateItemCount(totalPages, totalItems, page, limit);
-
-        return new ResponseBuilder()
-                .setStatus(ResponseState.OK)
-                .setMessage("Bucket folders successfully loaded.")
-                .addArray("data", fileStream)
-                .add("count", itemCount)
-                .add("total", totalItems)
-                .add("page", page)
-                .add("pages", totalPages)
-                .build();
-    }
-
-    private long calculateTotalPages(long totalItems, int limit) {
-        return (long) Math.ceil((double) totalItems / limit);
-    }
-
-    private int calculateItemCount(long totalPages, long totalItems, int page, int limit) {
-        if(totalItems == 0) return 0;
-        if(page == totalPages - 1) return (int) (totalItems % limit);
-        return limit;
-    }
 
 }

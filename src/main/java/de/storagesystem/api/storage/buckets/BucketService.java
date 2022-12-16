@@ -50,22 +50,4 @@ public interface BucketService {
      */
     ResponseEntity<ObjectNode> loadBucketInfo(Long userId, String bucket);
 
-    /**
-     * Load the folders of a bucket from a user.
-     * @param userId The id of the user.
-     * @param bucketName The name of the bucket.
-     * @param page The page to load.
-     * @param limit The limit of folders to load per page.
-     */
-    ResponseEntity<ObjectNode> loadBucketFolders(Long userId, String bucketName, int page, int limit);
-
-    /**
-     * Load the files of a bucket from a user.
-     * @param userId The id of the user.
-     * @param bucketName The name of the bucket.
-     * @param page The page to load.
-     * @param limit The limit of folders to load per page.
-     */
-    ResponseEntity<ObjectNode> loadBucketFiles(Long userId, String bucketName, int page, int limit);
-
 }

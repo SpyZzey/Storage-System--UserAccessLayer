@@ -59,6 +59,9 @@ public class BucketCustomDAOImpl implements BucketCustomDAO {
 
     /**
      * {@inheritDoc}
+     *
+     * @throws StorageEntityNotFoundException if the bucket with the given id does not exist
+     * @throws UserNotFoundException if the user with the given id does not exist
      */
     public Bucket getBucketByName(User user, String bucketName) throws UserNotFoundException, StorageEntityNotFoundException {
         return findByName(user, bucketName)

@@ -5,10 +5,7 @@ import de.storagesystem.api.auth.Authentication;
 import de.storagesystem.api.auth.RSAAuthentication;
 import de.storagesystem.api.cryptography.FileAESCryptographer;
 import de.storagesystem.api.cryptography.FileCryptographer;
-import de.storagesystem.api.exceptions.InvalidTokenException;
-import de.storagesystem.api.exceptions.StorageEntityCreationException;
-import de.storagesystem.api.exceptions.StorageEntityNotFoundException;
-import de.storagesystem.api.exceptions.UserNotFoundException;
+import de.storagesystem.api.exceptions.*;
 import de.storagesystem.api.properties.StorageServerConfigProperty;
 import de.storagesystem.api.storage.buckets.Bucket;
 import de.storagesystem.api.storage.buckets.BucketDAO;
@@ -22,6 +19,7 @@ import de.storagesystem.api.users.UserDAO;
 
 import de.storagesystem.api.util.ResponseBuilder;
 import de.storagesystem.api.util.ResponseState;
+import de.storagesystem.api.util.Util;
 import io.github.cdimascio.dotenv.Dotenv;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -44,6 +42,7 @@ import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.security.NoSuchAlgorithmException;
 import java.security.spec.InvalidKeySpecException;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
@@ -120,18 +119,34 @@ public class StorageFileServiceImpl extends StorageService implements StorageFil
             HttpClientErrorException,
             StorageEntityNotFoundException,
             StorageEntityCreationException,
+            StorageEntityAlreadyExistsException,
             UserNotFoundException {
         StorageServer server = storageServerRepository.findStorageServerByFreeCapacity(file.getSize())
                 .orElseThrow(() -> new StorageEntityNotFoundException("No storage server with enough free capacity found"));
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new UserNotFoundException("User with id " + userId + " not found"));
-        logger.info("Sending file to storage server: " + server.getName() + " (" + server.getHost() + ":" + server.getPort() + ")");
+        Bucket bucket = bucketRepository.getBucketByName(user, bucketName);
+        StorageFolder folder = bucketFolderRepository.getFolder(bucket, folderName);
+        StorageFile storageFile = new StorageFile(
+                server,
+                null,
+                file.getOriginalFilename(),
+                file.getContentType(),
+                file.getSize(),
+                user);
+        storageFile.setBucket(bucket);
+        storageFile.setParent(folder);
 
+        if (folder.getFiles().contains(storageFile))
+            throw new StorageEntityAlreadyExistsException("File already exists");
+
+        logger.info("Sending file to storage server: " + server.getName() + " (" + server.getHost() + ":" + server.getPort() + ")");
         ResponseEntity<ObjectNode> response = uploadFileToStorageServer(server, user, file);
-        if(response.getStatusCode() == HttpStatus.OK && response.hasBody()) {
-            String storedPath = Objects.requireNonNull(response.getBody()).get("path").asText();
+        if (response.getStatusCode() == HttpStatus.OK && response.hasBody()) {
             try {
-                return insertFileIntoDatabase(server, user, bucketName, folderName, storedPath, file);
+                String storedPath = Objects.requireNonNull(response.getBody()).get("path").asText();
+                storageFile.setStoredPath(storedPath);
+                return insertFileIntoDatabase(folder, storageFile);
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }
@@ -144,7 +159,8 @@ public class StorageFileServiceImpl extends StorageService implements StorageFil
      * {@inheritDoc}
      */
     @Override
-    public ResponseEntity<ObjectNode> deleteFile(long userId, String bucketName, String filePath) throws InvalidTokenException {
+    public ResponseEntity<ObjectNode> deleteFile(long userId, String bucketName, String filePath)
+            throws StorageEntityNotFoundException, StorageEntityCreationException, UserNotFoundException {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new UserNotFoundException("User with id " + userId + " not found"));
         Bucket bucket = bucketRepository.getBucketByName(user, bucketName);
@@ -153,7 +169,7 @@ public class StorageFileServiceImpl extends StorageService implements StorageFil
 
         logger.info("Deleting file from storage server: " + server.getName() + "(" + server.getHost() + ":" + server.getPort() + ")");
         ResponseEntity<ObjectNode> response = deleteFileFromStorageServer(server, file);
-        if(response.getStatusCode() == HttpStatus.OK && response.hasBody()) {
+        if (response.getStatusCode() == HttpStatus.OK && response.hasBody()) {
             return deleteFileFromDatabase(file);
         } else {
             throw new StorageEntityCreationException("Could not delete file");
@@ -164,25 +180,8 @@ public class StorageFileServiceImpl extends StorageService implements StorageFil
      * {@inheritDoc}
      */
     @Override
-    public ResponseEntity<ObjectNode> loadAllByPage(long userId, long page) {
-        return null;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public ResponseEntity<ObjectNode> loadAllByPath(long userId, String searchPath) {
-        return null;
-    }
-
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
     public ResponseEntity<Resource> loadFile(long userId, String bucketName, String filePath)
-            throws StorageEntityNotFoundException, UserNotFoundException, InvalidTokenException {
+            throws StorageEntityNotFoundException, UserNotFoundException {
         User user = userRepository.findById(userId).orElseThrow(() -> new UserNotFoundException("User not found"));
         Bucket bucket = bucketRepository.getBucketByName(user, bucketName);
         StorageFile file = storageFileRepository.getBucketFileByPath(bucket, filePath);
@@ -193,11 +192,11 @@ public class StorageFileServiceImpl extends StorageService implements StorageFil
         try {
             FileAESCryptographer cryptographer = new FileAESCryptographer(secretKey, "AES/CBC/PKCS5Padding");
 
-            byte[] encryptedData = Objects.requireNonNull(response.getBody()).getInputStream().readAllBytes();;
+            byte[] encryptedData = Objects.requireNonNull(response.getBody()).getInputStream().readAllBytes();
             byte[] decryptedData = cryptographer.decryptFile(encryptedData);
             Resource resource = new ByteArrayResource(decryptedData);
             return ResponseEntity.ok()
-                    .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + resource.getFilename() + "\"")
+                    .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + file.getOriginalName()+ "\"")
                     .contentLength(resource.contentLength())
                     .contentType(MediaType.APPLICATION_OCTET_STREAM)
                     .body(resource);
@@ -207,10 +206,36 @@ public class StorageFileServiceImpl extends StorageService implements StorageFil
         }
     }
 
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public ResponseEntity<ObjectNode> loadFiles(Long userId, String bucket, String pathToParent, int page, int limit)
+            throws StorageEntityNotFoundException, UserNotFoundException {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new UserNotFoundException("User not found"));
+        Bucket bucketObj = bucketRepository.findByName(user, bucket)
+                .orElseThrow(() -> new StorageEntityNotFoundException("Bucket not found"));
+        StorageFolder parentObj = bucketFolderRepository.getFolder(bucketObj, pathToParent);
+
+        logger.info("Load file page " + page + " with limit " + limit
+                + " of bucket " + bucket + " for user " + user.getFirstname() + " " + user.getLastname());
+
+        // Fetch all files of a bucket
+        List<StorageFile> files = parentObj.getFiles();
+        ObjectNode response = Util.createStorageItemList(files, page, limit);
+        return ResponseEntity.ok(response);
+    }
+
     private ResponseEntity<ObjectNode> deleteFileFromDatabase(StorageFile file) {
         StorageFolder folder = file.getParent();
         folder.removeFile(file);
 
+        StorageServer server = file.getStorageServer();
+        server.setFreeStorage(server.getFreeStorage() + file.getSize());
+
+        storageServerRepository.save(server);
         storageFileRepository.delete(file);
         bucketFolderRepository.save(folder);
         ObjectNode response = new ResponseBuilder().build(ResponseState.OK, "File deleted");
@@ -218,24 +243,13 @@ public class StorageFileServiceImpl extends StorageService implements StorageFil
     }
 
     private ResponseEntity<ObjectNode> insertFileIntoDatabase(
-            StorageServer server,
-            User user,
-            String bucketName,
-            String folderName,
-            String storedPath,
-            MultipartFile file) throws IOException {
-        Bucket bucket = bucketRepository.getBucketByName(user, bucketName);
-        StorageFolder folder = bucketFolderRepository.getFolder(bucket, folderName);
+            StorageFolder folder,
+            StorageFile storageFile) throws IOException {
 
-        StorageFile storageFile = new StorageFile(
-                server,
-                storedPath,
-                file.getOriginalFilename(),
-                file.getContentType(),
-                file.getSize(),
-                user);
 
         folder.addFile(storageFile);
+        StorageServer server = storageFile.getStorageServer();
+        server.setFreeStorage(server.getFreeStorage() - storageFile.getSize());
 
         storageFileRepository.save(storageFile);
         bucketFolderRepository.save(folder);
@@ -267,7 +281,8 @@ public class StorageFileServiceImpl extends StorageService implements StorageFil
         body.add("file", fileEntity);
 
         HttpEntity<MultiValueMap<String, Object>> requestEntity = new HttpEntity<>(body, headers);
-        ParameterizedTypeReference<ObjectNode> responseType = new ParameterizedTypeReference<>() {};
+        ParameterizedTypeReference<ObjectNode> responseType = new ParameterizedTypeReference<>() {
+        };
         return restTemplate.exchange(url, HttpMethod.POST, requestEntity, responseType);
     }
 
@@ -280,7 +295,8 @@ public class StorageFileServiceImpl extends StorageService implements StorageFil
         HttpHeaders headers = new HttpHeaders();
         headers.setBearerAuth(storageAuth);
         HttpEntity<String> requestEntity = new HttpEntity<>(headers);
-        ParameterizedTypeReference<ObjectNode> responseType = new ParameterizedTypeReference<>() {};
+        ParameterizedTypeReference<ObjectNode> responseType = new ParameterizedTypeReference<>() {
+        };
         return restTemplate.exchange(url, HttpMethod.DELETE, requestEntity, responseType);
     }
 
@@ -304,7 +320,4 @@ public class StorageFileServiceImpl extends StorageService implements StorageFil
         }
     }
 
-    private String generateServerToken() {
-        return this.auth.createToken(Map.of("server_type", "storage-master-server"));
-    }
 }

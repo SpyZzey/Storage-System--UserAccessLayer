@@ -6,12 +6,16 @@ import de.storagesystem.api.servers.StorageServer;
 import de.storagesystem.api.users.User;
 
 import javax.persistence.*;
+import java.util.Objects;
 
 /**
  * @author Simon Brebeck
  */
 @Entity
-@Table(name = "storage_files")
+@Table(
+        name = "storage_files",
+        uniqueConstraints = {@UniqueConstraint(columnNames = {"bucket_id", "path"})}
+)
 public class StorageFile extends StorageItem {
 
     /**
@@ -161,5 +165,18 @@ public class StorageFile extends StorageItem {
      */
     public void setDeleted(boolean deleted) {
         this.deleted = deleted;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null) return false;
+        if(!(o instanceof StorageFile sf)) return false;
+        return (getPath().equals(sf.getPath()) && getBucket().equals(sf.getBucket()));
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(getPath(), getBucket());
     }
 }

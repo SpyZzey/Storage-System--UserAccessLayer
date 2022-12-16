@@ -38,24 +38,6 @@ public interface StorageFileService {
     ResponseEntity<ObjectNode> deleteFile(long userId, String bucketName, String filePath) throws InvalidTokenException;
 
     /**
-     * Loads all files from a user.
-     *
-     * @param userId The user id of the user the file belongs to.
-     * @param page The page to load.
-     * @return Stream of paths to the files
-     */
-    ResponseEntity<ObjectNode> loadAllByPage(long userId, long page);
-
-    /**
-     * Loads all files from a user under a given path.
-     *
-     * @param userId The user id of the user the files belong to.
-     * @param searchPath The path to search for.
-     * @return Stream of paths to the files
-     */
-    ResponseEntity<ObjectNode> loadAllByPath(long userId, String searchPath);
-
-    /**
      * Loads a file from a user as a resource.
      *
      * @param userId The user id of the user the file belongs to.
@@ -65,4 +47,14 @@ public interface StorageFileService {
      * @return the resource
      */
     ResponseEntity<Resource> loadFile(long userId, String bucket, String filePath) throws InvalidTokenException;
+
+    /**
+     * Load the files of a bucket from a user.
+     * @param userId The id of the user.
+     * @param bucket The name of the bucket.
+     * @param pathToParent The path of the parent folder.
+     * @param page The page to load.
+     * @param limit The limit of folders to load per page.
+     */
+    ResponseEntity<ObjectNode> loadFiles(Long userId, String bucket, String pathToParent, int page, int limit);
 }

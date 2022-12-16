@@ -7,13 +7,17 @@ import de.storagesystem.api.users.User;
 import javax.persistence.Entity;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
+import javax.persistence.UniqueConstraint;
 import java.util.List;
 
 /**
  * @author Simon Brebeck
  */
 @Entity
-@Table(name = "storage_folders")
+@Table(
+        name = "storage_folders",
+        uniqueConstraints = {@UniqueConstraint(columnNames = {"bucket_id", "path"})}
+)
 public class StorageFolder extends StorageItem {
 
     @OneToMany

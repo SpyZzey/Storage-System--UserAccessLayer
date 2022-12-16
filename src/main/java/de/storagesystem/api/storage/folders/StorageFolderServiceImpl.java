@@ -2,23 +2,31 @@ package de.storagesystem.api.storage.folders;
 
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import de.storagesystem.api.exceptions.StorageEntityAlreadyExistsException;
+import de.storagesystem.api.exceptions.StorageEntityCreationException;
+import de.storagesystem.api.exceptions.StorageEntityNotFoundException;
 import de.storagesystem.api.exceptions.UserNotFoundException;
+import de.storagesystem.api.storage.StorageItem;
 import de.storagesystem.api.storage.buckets.Bucket;
 import de.storagesystem.api.storage.buckets.BucketDAO;
 import de.storagesystem.api.storage.buckets.BucketServiceImpl;
 import de.storagesystem.api.storage.StorageService;
+import de.storagesystem.api.storage.files.StorageFile;
 import de.storagesystem.api.storage.files.StorageFileDAO;
 import de.storagesystem.api.servers.StorageServerDAO;
 import de.storagesystem.api.users.User;
 import de.storagesystem.api.users.UserDAO;
 import de.storagesystem.api.util.ResponseBuilder;
 import de.storagesystem.api.util.ResponseState;
+import de.storagesystem.api.util.Util;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import java.nio.file.Path;
+import java.util.Comparator;
+import java.util.List;
+import java.util.stream.Stream;
 
 /**
  * @author Simon Brebeck
@@ -62,7 +70,7 @@ public class StorageFolderServiceImpl extends StorageService implements StorageF
      */
     @Override
     public ResponseEntity<ObjectNode> createFolder(Long userId, String bucketName, String parentFolderPath, String folderName)
-            throws UserNotFoundException {
+            throws StorageEntityNotFoundException, StorageEntityCreationException, UserNotFoundException {
         User user = userRepository
                 .findById(userId).orElseThrow(() -> new UserNotFoundException("User not found"));
         Bucket bucketObj = bucketRepository
@@ -100,20 +108,25 @@ public class StorageFolderServiceImpl extends StorageService implements StorageF
     public ResponseEntity<ObjectNode> deleteFolder(Long userId, String bucketName, String folderPath) {
         return null;
     }
-
     /**
      * {@inheritDoc}
      */
     @Override
-    public ResponseEntity<ObjectNode> loadAllFolders(Long userId) {
-        return null;
+    public ResponseEntity<ObjectNode> loadFolders(Long userId, String bucket, String pathToParent, int page, int limit)
+            throws StorageEntityNotFoundException, StorageEntityCreationException, UserNotFoundException {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new UserNotFoundException("User not found"));
+        Bucket bucketObj = bucketRepository.findByName(user, bucket)
+                .orElseThrow(() -> new StorageEntityNotFoundException("Bucket not found"));
+        StorageFolder parentObj = bucketFolderRepository.getFolder(bucketObj, pathToParent);
+
+        logger.info("Load folder page " + page + " with limit " + limit
+                + " of bucket " + bucket + " for user " + user.getFirstname() + " " + user.getLastname());
+
+        // Fetch all folders of a bucket
+        List<StorageFolder> folders = parentObj.getFolders();
+        ObjectNode response = Util.createStorageItemList(folders, page, limit);
+        return ResponseEntity.ok(response);
     }
 
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public ResponseEntity<ObjectNode> loadFolderByPath(Long userId, String bucket, Path filePath) {
-        return null;
-    }
 }

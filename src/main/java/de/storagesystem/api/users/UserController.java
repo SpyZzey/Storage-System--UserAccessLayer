@@ -42,7 +42,7 @@ public class UserController {
     /**
      * Returns the user information of the sender.
      * @param authentication The authentication header/JWT Token.
-     * @return
+     * @return An {@link Optional<User>} containing the user information if the user exists.
      */
     @GetMapping
     public @ResponseBody Optional<User> getUser(@RequestHeader(HttpHeaders.AUTHORIZATION) String authentication)
@@ -53,10 +53,10 @@ public class UserController {
     /**
      * Updates a user with the user object in the request body or creates the user if the id does not exist.
      * @param user The user object to update.
-     * @return A JSON Object with the status code and the user id.
+     * @return A {@link ResponseEntity<ObjectNode>} object with the status code and the user id.
      */
     @PutMapping
-    public @ResponseBody ResponseEntity<ObjectNode> createOrUpdateUser(@RequestBody User user) {
+    public ResponseEntity<ObjectNode> createOrUpdateUser(@RequestBody User user) {
         return userService.createOrUpdateUser(user);
     }
 
@@ -64,10 +64,10 @@ public class UserController {
      * Deletes a user if the current sender is the user to be deleted or has the privilege to delete users.
      * @param authentication The authentication header/JWT Token.
      * @param id The id of the user to be deleted.
-     * @return A JSON Object with the status code and message.
+     * @return A {@link ResponseEntity<ObjectNode>} object with the status code and message.
      */
     @DeleteMapping
-    public @ResponseBody ResponseEntity<ObjectNode> deleteUser(
+    public ResponseEntity<ObjectNode> deleteUser(
             @RequestHeader(HttpHeaders.AUTHORIZATION) String authentication,
             @RequestParam(value = "id") Long id)
             throws InvalidTokenException {
@@ -77,10 +77,10 @@ public class UserController {
     /**
      * Registers a new user and returns a JWT token
      * @param user User object
-     * @return JSON String with status and JWT token
+     * @return {@link ResponseEntity<ObjectNode>} object with status and JWT token
      */
     @PostMapping
-    public @ResponseBody ResponseEntity<ObjectNode> createUser(@RequestBody User user) {
+    public ResponseEntity<ObjectNode> createUser(@RequestBody User user) {
         return userService.createUser(user);
     }
 }

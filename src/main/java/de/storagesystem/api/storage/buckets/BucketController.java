@@ -51,10 +51,10 @@ public class BucketController {
 
     /**
      * Creates a new bucket with the given name for user.
+     *
      * @param authentication The authentication of the user.
      * @param bucketName The name of the bucket.
      * @return The ResponseEntity with the status code.
-     * @throws MaxUploadSizeExceededException If the size of the file is too big.
      * @throws StorageEntityAlreadyExistsException If the bucket already exists.
      * @throws UserInputValidationException If the bucket name is not valid.
      * @throws InvalidTokenException If the token is invalid.
@@ -63,9 +63,10 @@ public class BucketController {
     public ResponseEntity<ObjectNode> handleBucketCreation(
             @RequestHeader(HttpHeaders.AUTHORIZATION) String authentication,
             @RequestParam("bucket") String bucketName)
-            throws MaxUploadSizeExceededException,
-            StorageEntityAlreadyExistsException,
+            throws
             UserInputValidationException,
+            UserNotFoundException,
+            StorageEntityNotFoundException,
             InvalidTokenException {
         // Validate user input
         StorageInputValidation inputValidation = new StorageInputValidationImpl();
@@ -78,11 +79,25 @@ public class BucketController {
         return storageService.createBucket(userService.getUserId(authentication), bucketName);
     }
 
+    /**
+     * Deletes the bucket with the given name for user.
+     *
+     * @param authentication The authentication of the user.
+     * @param bucketName The name of the bucket.
+     * @return The ResponseEntity with the status code and the status message.
+     * @throws UserInputValidationException If the bucket name is not valid.
+     * @throws UserNotFoundException If the user does not exist.
+     * @throws StorageEntityNotFoundException If the bucket does not exist.
+     * @throws InvalidTokenException If the token is invalid.
+     */
     @DeleteMapping(value = "/{bucketName}")
     public ResponseEntity<ObjectNode> handleBucketDeletion(
             @RequestHeader(HttpHeaders.AUTHORIZATION) String authentication,
             @PathVariable String bucketName)
-            throws UserInputValidationException,
+            throws
+            UserInputValidationException,
+            UserNotFoundException,
+            StorageEntityNotFoundException,
             InvalidTokenException {
         // Validate user input
         StorageInputValidation inputValidation = new StorageInputValidationImpl();
@@ -95,12 +110,24 @@ public class BucketController {
         return storageService.deleteBucket(userService.getUserId(authentication), bucketName);
     }
 
+    /**
+     * Lists all buckets for user.
+     *
+     * @param authentication The authentication of the user.
+     * @param page The page number.
+     * @param limit The limit of buckets per page.
+     * @return The ResponseEntity with the status code and the list of buckets.
+     * @throws UserNotFoundException If the user does not exist.
+     * @throws InvalidTokenException If the token is invalid.
+     */
     @GetMapping(value = "/")
     public ResponseEntity<ObjectNode> handleBucketList(
             @RequestHeader(HttpHeaders.AUTHORIZATION) String authentication,
             @RequestParam(value = "page", defaultValue = "0") int page,
             @RequestParam(value = "limit", defaultValue = "100") int limit)
-            throws InvalidTokenException {
+            throws
+            UserNotFoundException,
+            InvalidTokenException {
 
         // Validate user input
         if(page < 0 || limit < 0) throw new IllegalArgumentException("Page and limit must be greater than 0");
@@ -111,11 +138,25 @@ public class BucketController {
         return storageService.loadPage(userService.getUserId(authentication), page, limit);
     }
 
+    /**
+     * Returns information about the bucket with the given name for a user.
+     *
+     * @param authentication The authentication of the user.
+     * @param bucketName The name of the bucket.
+     * @return The ResponseEntity with the status code and the bucket information.
+     * @throws UserInputValidationException If the bucket name is not valid.
+     * @throws UserNotFoundException If the user does not exist.
+     * @throws StorageEntityNotFoundException If the bucket does not exist.
+     * @throws InvalidTokenException If the token is invalid.
+     */
     @GetMapping(value = "/{bucketName}")
     public ResponseEntity<ObjectNode> handleBucketInfo(
             @RequestHeader(HttpHeaders.AUTHORIZATION) String authentication,
             @PathVariable String bucketName)
-            throws UserInputValidationException,
+            throws
+            UserInputValidationException,
+            UserNotFoundException,
+            StorageEntityNotFoundException,
             InvalidTokenException {
         // Validate user input
         StorageInputValidation inputValidation = new StorageInputValidationImpl();
@@ -127,46 +168,5 @@ public class BucketController {
         return storageService.loadBucketInfo(userService.getUserId(authentication), bucketName);
     }
 
-    @GetMapping(value = "/{bucketName}/files")
-    public ResponseEntity<ObjectNode> handleFileList(
-            @RequestHeader(HttpHeaders.AUTHORIZATION) String authentication,
-            @PathVariable String bucketName,
-            @RequestParam(value = "page", defaultValue = "0") int page,
-            @RequestParam(value = "limit", defaultValue = "100") int limit)
-            throws UserInputValidationException,
-            InvalidTokenException {
-        // Validate user input
-        StorageInputValidation inputValidation = new StorageInputValidationImpl();
-        if(!inputValidation.validateBucketName(bucketName))
-            throw new UserInputValidationException("Invalid bucket name");
-        if(page < 0 || limit < 0)
-            throw new IllegalArgumentException("Page and limit must be greater than 0");
-        if(limit > 100)
-            throw new IllegalArgumentException("Cannot get more than 100 buckets at once");
-
-        logger.info("Getting file list of bucket: " + bucketName);
-        return storageService.loadBucketFiles(userService.getUserId(authentication), bucketName, page, limit);
-    }
-
-    @GetMapping(value = "/{bucketName}/folders")
-    public ResponseEntity<ObjectNode> handleFolderList(
-            @RequestHeader(HttpHeaders.AUTHORIZATION) String authentication,
-            @PathVariable String bucketName,
-            @RequestParam(value = "page", defaultValue = "0") int page,
-            @RequestParam(value = "limit", defaultValue = "100") int limit)
-            throws UserInputValidationException,
-            InvalidTokenException {
-        // Validate user input
-        StorageInputValidation inputValidation = new StorageInputValidationImpl();
-        if(!inputValidation.validateBucketName(bucketName))
-            throw new UserInputValidationException("Invalid bucket name");
-        if(page < 0 || limit < 0)
-            throw new IllegalArgumentException("Page and limit must be greater than 0");
-        if(limit > 100)
-            throw new IllegalArgumentException("Cannot get more than 100 buckets at once");
-
-        logger.info("Getting folder list of bucket: " + bucketName);
-        return storageService.loadBucketFolders(userService.getUserId(authentication), bucketName, page, limit);
-    }
 
 }

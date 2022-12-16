@@ -52,6 +52,8 @@ public class StorageFolderCustomDAOImpl implements StorageFolderCustomDAO {
 
     /**
      * {@inheritDoc}
+     *
+     * @throws StorageEntityNotFoundException if the folder does not exist.
      */
     public StorageFolder getFolder(Bucket bucket, String path) {
         if(path == null || path.equalsIgnoreCase("/")) return bucket.getRootFolder();

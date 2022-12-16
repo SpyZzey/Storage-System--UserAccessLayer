@@ -1,10 +1,7 @@
 package de.storagesystem.api.storage.files;
 
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import de.storagesystem.api.exceptions.InvalidTokenException;
-import de.storagesystem.api.exceptions.StorageEntityNotFoundException;
-import de.storagesystem.api.exceptions.UserInputValidationException;
-import de.storagesystem.api.exceptions.UserNotFoundException;
+import de.storagesystem.api.exceptions.*;
 import de.storagesystem.api.storage.StorageInputValidation;
 import de.storagesystem.api.storage.StorageInputValidationImpl;
 import de.storagesystem.api.users.UserService;
@@ -66,7 +63,7 @@ public class StorageFileController {
      * @throws UserInputValidationException if the bucket, folder or file name is invalid
      * @throws InvalidTokenException if the authentication token is invalid
      */
-    @GetMapping("/{bucket}/{path}")
+    @GetMapping("/download/{bucket}/{path}")
     @ResponseBody
     public ResponseEntity<Resource> serveFile(
             @RequestHeader(HttpHeaders.AUTHORIZATION) String authentication,
@@ -83,11 +80,23 @@ public class StorageFileController {
         if(!inputValidation.validateFilePath(path))
             throw new UserInputValidationException("Invalid file path");
 
-        path = "/" + path;
-        logger.info("Download file " + path + " from bucket " + bucket);
-        return storageService.loadFile(userService.getUserId(authentication), bucket, path);
+        String pathToParent = (path == null) ? "/" + bucket : "/" + bucket + "/" + path;
+        logger.info("Download file " + pathToParent + " from bucket " + bucket);
+        return storageService.loadFile(userService.getUserId(authentication), bucket, pathToParent);
     }
 
+    /**
+     * Deletes a file from a folder inside a bucket with a given name for a user
+     *
+     * @param authentication the authentication token of the user
+     * @param bucket the bucket name where the file is located
+     * @param path the path of the file
+     * @return the file as a {@link ResponseEntity<ObjectNode>}
+     * @throws StorageEntityNotFoundException if the bucket, folder or file does not exist
+     * @throws UserNotFoundException if the user does not exist
+     * @throws UserInputValidationException if the bucket, folder or file name is invalid
+     * @throws InvalidTokenException if the authentication token is invalid
+     */
     @DeleteMapping("/{bucket}/{path}")
     @ResponseBody
     public ResponseEntity<ObjectNode> deleteFile(
@@ -99,15 +108,16 @@ public class StorageFileController {
             UserNotFoundException,
             UserInputValidationException,
             InvalidTokenException {
+
         StorageInputValidation inputValidation = new StorageInputValidationImpl();
         if(!inputValidation.validateBucketName(bucket))
             throw new UserInputValidationException("Invalid bucket name");
         if(!inputValidation.validateFilePath(path))
             throw new UserInputValidationException("Invalid file path");
 
-        path = "/" + path;
-        logger.info("Delete file " + path + " from bucket " + bucket);
-        return storageService.deleteFile(userService.getUserId(authentication), bucket, path);
+        String pathToParent = (path == null) ? "/" + bucket : "/" + bucket + "/" + path;
+        logger.info("Delete file " + pathToParent + " from bucket " + bucket);
+        return storageService.deleteFile(userService.getUserId(authentication), bucket, pathToParent);
     }
 
     /**
@@ -117,7 +127,7 @@ public class StorageFileController {
      * @param bucket the bucket name where the file should be uploaded
      * @param folderPath the folder path where the file should be uploaded
      * @param file the file to upload
-     * @return the response as a {@code Map<String, String>}
+     * @return the response as a {@link ResponseEntity<ObjectNode>}
      * @throws MaxUploadSizeExceededException if the file is too big
      * @throws StorageEntityNotFoundException if the bucket or folder does not exist
      * @throws UserNotFoundException if the user does not exist
@@ -133,11 +143,11 @@ public class StorageFileController {
             throws
             MaxUploadSizeExceededException,
             StorageEntityNotFoundException,
+            StorageEntityCreationException,
+            StorageEntityAlreadyExistsException,
             UserNotFoundException,
             UserInputValidationException,
-            InvalidTokenException{
-        String pathToParent = (folderPath == null) ? "/" + bucket : "/" + bucket + "/" + folderPath;
-
+            InvalidTokenException {
         // Validate user input
         StorageInputValidation inputValidation = new StorageInputValidationImpl();
         if(!inputValidation.validateBucketName(bucket)) // Check if the bucket name is valid
@@ -145,10 +155,25 @@ public class StorageFileController {
         if(!inputValidation.validateFolderPath(folderPath)) // Check if the folder path is valid
             throw new UserInputValidationException("Invalid folder path");
 
+        String pathToParent = (folderPath == null) ? "/" + bucket : "/" + bucket + "/" + folderPath;
         logger.info("Upload file " + file.getOriginalFilename() + " to bucket " + bucket + " in path " + pathToParent);
         return storageService.storeFile(userService.getUserId(authentication), bucket, pathToParent, file);
     }
 
+
+    /**
+     * Uploads a file to a folder inside a bucket for a user
+     *
+     * @param authentication the authentication token of the user
+     * @param bucket the bucket name where the file should be uploaded
+     * @param file the file to upload
+     * @return the response as a {@link ResponseEntity<ObjectNode>}
+     * @throws MaxUploadSizeExceededException if the file is too big
+     * @throws StorageEntityNotFoundException if the bucket or folder does not exist
+     * @throws UserNotFoundException if the user does not exist
+     * @throws UserInputValidationException if the bucket, folder name is invalid
+     * @throws InvalidTokenException if the authentication token is invalid
+     */
     @PostMapping("/{bucket}")
     public ResponseEntity<ObjectNode> handleFileUploadByName(
             @RequestHeader(HttpHeaders.AUTHORIZATION) String authentication,
@@ -157,10 +182,85 @@ public class StorageFileController {
             throws
             MaxUploadSizeExceededException,
             StorageEntityNotFoundException,
+            StorageEntityCreationException,
+            StorageEntityAlreadyExistsException,
             UserNotFoundException,
             UserInputValidationException,
             InvalidTokenException{
         return handleFileUploadByName(authentication, bucket, null, file);
+    }
+
+
+    /**
+     * Lists all files in a folder inside a bucket for a user
+     *
+     * @param authentication the authentication token of the user
+     * @param bucketName the bucket name where the file is located
+     * @param relativePath the folder path where the file is located
+     * @param page the page number
+     * @param limit the number of files to return
+     * @return the list of files as a {@link ResponseEntity<ObjectNode>}
+     * @throws StorageEntityNotFoundException if the bucket or folder does not exist
+     * @throws StorageEntityCreationException if the folder could not be created
+     * @throws StorageEntityAlreadyExistsException if the folder already exists
+     * @throws UserInputValidationException if the bucket or folder name is invalid
+     * @throws InvalidTokenException if the authentication token is invalid
+     */
+    @GetMapping(value = "/{bucketName}/{relativePath}")
+    public ResponseEntity<ObjectNode> handleFileList(
+            @RequestHeader(HttpHeaders.AUTHORIZATION) String authentication,
+            @PathVariable String bucketName,
+            @PathVariable(value = "relativePath", required = false) String relativePath,
+            @RequestParam(value = "page", defaultValue = "0") int page,
+            @RequestParam(value = "limit", defaultValue = "100") int limit)
+            throws
+            StorageEntityNotFoundException,
+            StorageEntityCreationException,
+            StorageEntityAlreadyExistsException,
+            UserInputValidationException,
+            InvalidTokenException {
+
+        // Validate user input
+        StorageInputValidation inputValidation = new StorageInputValidationImpl();
+        if(!inputValidation.validateBucketName(bucketName))
+            throw new UserInputValidationException("Invalid bucket name");
+        if(page < 0 || limit < 0)
+            throw new IllegalArgumentException("Page and limit must be greater than 0");
+        if(limit > 100)
+            throw new IllegalArgumentException("Cannot get more than 100 buckets at once");
+
+        String pathToParent = (relativePath == null) ? "/" + bucketName : "/" + bucketName + "/" + relativePath;
+        logger.info("Getting file list of folder: " + pathToParent);
+        return storageService.loadFiles(userService.getUserId(authentication), bucketName, pathToParent, page, limit);
+    }
+
+    /**
+     * Lists all files in a folder inside a bucket for a user
+     *
+     * @param authentication the authentication token of the user
+     * @param bucketName the bucket name where the file is located
+     * @param page the page number
+     * @param limit the number of files to return
+     * @return the list of files as a {@link ResponseEntity<ObjectNode>}
+     * @throws StorageEntityNotFoundException if the bucket or folder does not exist
+     * @throws StorageEntityCreationException if the folder could not be created
+     * @throws StorageEntityAlreadyExistsException if the folder already exists
+     * @throws UserInputValidationException if the bucket or folder name is invalid
+     * @throws InvalidTokenException if the authentication token is invalid
+     */
+    @GetMapping(value = "/{bucketName}")
+    public ResponseEntity<ObjectNode> handleFileList(
+            @RequestHeader(HttpHeaders.AUTHORIZATION) String authentication,
+            @PathVariable String bucketName,
+            @RequestParam(value = "page", defaultValue = "0") int page,
+            @RequestParam(value = "limit", defaultValue = "100") int limit)
+            throws
+            StorageEntityNotFoundException,
+            StorageEntityCreationException,
+            StorageEntityAlreadyExistsException,
+            UserInputValidationException,
+            InvalidTokenException {
+        return handleFileList(authentication, bucketName, null, page, limit);
     }
 
 }

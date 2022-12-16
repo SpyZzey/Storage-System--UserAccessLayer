@@ -24,11 +24,11 @@ GET localhost:8081/api/buckets/TestBucket
 Authorization: Bearer {{auth_token}}
 
 ### List folders in bucket
-GET localhost:8081/api/buckets/TestBucket/folders
+GET localhost:8081/api/folders/TestBucket
 Authorization: Bearer {{auth_token}}
 
 ### List files in bucket
-GET localhost:8081/api/buckets/TestBucket/files
+GET localhost:8081/api/files/TestBucket
 Authorization: Bearer {{auth_token}}
 
 ### Delete Bucket
@@ -43,8 +43,20 @@ Authorization: Bearer {{auth_token}}
 POST localhost:8081/api/folders/TestBucket/MeinSpeicher?folder=TestSpeicher
 Authorization: Bearer {{auth_token}}
 
+### Create second Directory in directory in bucket
+POST localhost:8081/api/folders/TestBucket/MeinSpeicher?folder=ZweiterSpeicher
+Authorization: Bearer {{auth_token}}
+
+### List folders in directory in bucket
+GET localhost:8081/api/folders/TestBucket/MeinSpeicher
+Authorization: Bearer {{auth_token}}
+
+### List files in directory in bucket
+GET localhost:8081/api/files/TestBucket/MeinSpeicher
+Authorization: Bearer {{auth_token}}
+
 ### Upload file to bucket
-POST localhost:8081/api/files/TestBucket
+POST localhost:8081/api/files/TestBucket/MeinSpeicher
 Authorization: Bearer {{auth_token}}
 Content-Type: multipart/form-data; boundary=boundary
 
@@ -54,6 +66,10 @@ Content-Disposition: form-data; name="file"; filename="martin.txt"
 // File content
 < ./resources/testfile.txt
 
+### List files in directory in bucket
+GET localhost:8081/api/files/TestBucket/MeinSpeicher
+Authorization: Bearer {{auth_token}}
+
 ### Download file from bucket and directory
-GET localhost:8081/api/files/TestBucket/MeinSpeicher%2Fmartin.txt
+GET localhost:8081/api/files/download/TestBucket/MeinSpeicher%2Fmartin.txt
 Authorization: Bearer {{auth_token}}

@@ -11,7 +11,7 @@ import javax.validation.constraints.NotBlank;
 @Validated
 @Component
 public class StorageProperty {
-
+    
     @NotBlank
     private String issuer;
 
