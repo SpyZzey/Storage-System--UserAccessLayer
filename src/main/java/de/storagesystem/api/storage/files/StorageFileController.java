@@ -63,7 +63,7 @@ public class StorageFileController {
      * @throws UserInputValidationException if the bucket, folder or file name is invalid
      * @throws InvalidTokenException if the authentication token is invalid
      */
-    @GetMapping("/download/{bucket}/{path}")
+    @GetMapping("/{bucket}/{path}/download")
     @ResponseBody
     public ResponseEntity<Resource> serveFile(
             @RequestHeader(HttpHeaders.AUTHORIZATION) String authentication,
@@ -160,37 +160,6 @@ public class StorageFileController {
         return storageService.storeFile(userService.getUserId(authentication), bucket, pathToParent, file);
     }
 
-
-    /**
-     * Uploads a file to a folder inside a bucket for a user
-     *
-     * @param authentication the authentication token of the user
-     * @param bucket the bucket name where the file should be uploaded
-     * @param file the file to upload
-     * @return the response as a {@link ResponseEntity<ObjectNode>}
-     * @throws MaxUploadSizeExceededException if the file is too big
-     * @throws StorageEntityNotFoundException if the bucket or folder does not exist
-     * @throws UserNotFoundException if the user does not exist
-     * @throws UserInputValidationException if the bucket, folder name is invalid
-     * @throws InvalidTokenException if the authentication token is invalid
-     */
-    @PostMapping("/{bucket}")
-    public ResponseEntity<ObjectNode> handleFileUploadByName(
-            @RequestHeader(HttpHeaders.AUTHORIZATION) String authentication,
-            @PathVariable("bucket") String bucket,
-            @RequestParam("file") MultipartFile file)
-            throws
-            MaxUploadSizeExceededException,
-            StorageEntityNotFoundException,
-            StorageEntityCreationException,
-            StorageEntityAlreadyExistsException,
-            UserNotFoundException,
-            UserInputValidationException,
-            InvalidTokenException{
-        return handleFileUploadByName(authentication, bucket, null, file);
-    }
-
-
     /**
      * Lists all files in a folder inside a bucket for a user
      *
@@ -262,5 +231,35 @@ public class StorageFileController {
             InvalidTokenException {
         return handleFileList(authentication, bucketName, null, page, limit);
     }
+
+    /**
+     * Uploads a file to a folder inside a bucket for a user
+     *
+     * @param authentication the authentication token of the user
+     * @param bucket the bucket name where the file should be uploaded
+     * @param file the file to upload
+     * @return the response as a {@link ResponseEntity<ObjectNode>}
+     * @throws MaxUploadSizeExceededException if the file is too big
+     * @throws StorageEntityNotFoundException if the bucket or folder does not exist
+     * @throws UserNotFoundException if the user does not exist
+     * @throws UserInputValidationException if the bucket, folder name is invalid
+     * @throws InvalidTokenException if the authentication token is invalid
+     */
+    @PostMapping("/{bucket}")
+    public ResponseEntity<ObjectNode> handleFileUploadByName(
+            @RequestHeader(HttpHeaders.AUTHORIZATION) String authentication,
+            @PathVariable("bucket") String bucket,
+            @RequestParam("file") MultipartFile file)
+            throws
+            MaxUploadSizeExceededException,
+            StorageEntityNotFoundException,
+            StorageEntityCreationException,
+            StorageEntityAlreadyExistsException,
+            UserNotFoundException,
+            UserInputValidationException,
+            InvalidTokenException{
+        return handleFileUploadByName(authentication, bucket, null, file);
+    }
+
 
 }

@@ -138,7 +138,7 @@ public class BucketServiceImpl extends StorageService implements BucketService {
         // Fetch the total amount of buckets
         long totalBucketsByUser = bucketRepository.countBucketsByUser(user);
         long totalPages = Util.calculateTotalPages(totalBucketsByUser, limit);
-        int bucketCount = Util.calculateItemCount(totalPages, totalBucketsByUser, page, limit);
+        long bucketCount = Util.calculateItemCount(totalPages, totalBucketsByUser, page, limit);
 
         // Create a new response object
         ObjectNode response = new ResponseBuilder()

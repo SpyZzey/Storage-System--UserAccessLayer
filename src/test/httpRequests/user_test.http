@@ -1,5 +1,5 @@
 ### Send POST request with json body
-POST localhost:8081/api/user/
+POST localhost:8081/api/users/
 Content-Type: application/json
 
 {
@@ -11,8 +11,16 @@ Content-Type: application/json
     client.global.set("auth_token", response.body["token"]);
 %}
 
+### Delete user
+DELETE localhost:8081/api/users/6
+Authorization: Bearer {{auth_token}}
+
+### Get user
+GET localhost:8081/api/users/5
+Authorization: Bearer {{auth_token}}
+
 ### Create Bucket
-POST localhost:8081/api/buckets/?bucket=TestBucket
+POST localhost:8081/api/buckets/?bucket=Test
 Authorization: Bearer {{auth_token}}
 
 ### List Buckets
@@ -20,11 +28,11 @@ GET localhost:8081/api/buckets/
 Authorization: Bearer {{auth_token}}
 
 ### List Bucket Info
-GET localhost:8081/api/buckets/TestBucket
+GET localhost:8081/api/buckets/Ellipso
 Authorization: Bearer {{auth_token}}
 
 ### List folders in bucket
-GET localhost:8081/api/folders/TestBucket
+GET localhost:8081/api/folders/Ellipso
 Authorization: Bearer {{auth_token}}
 
 ### List files in bucket
@@ -32,11 +40,11 @@ GET localhost:8081/api/files/TestBucket
 Authorization: Bearer {{auth_token}}
 
 ### Delete Bucket
-DELETE localhost:8081/api/buckets/TestBucket
+DELETE localhost:8081/api/buckets/Test
 Authorization: Bearer {{auth_token}}
 
 ### Create Directory in bucket
-POST localhost:8081/api/folders/TestBucket/?folder=MeinSpeicher
+POST localhost:8081/api/folders/Ellipso/?folder=Documents
 Authorization: Bearer {{auth_token}}
 
 ### Create Directory in directory in bucket
@@ -48,7 +56,7 @@ POST localhost:8081/api/folders/TestBucket/MeinSpeicher?folder=ZweiterSpeicher
 Authorization: Bearer {{auth_token}}
 
 ### List folders in directory in bucket
-GET localhost:8081/api/folders/TestBucket/MeinSpeicher
+GET localhost:8081/api/folders/Ellipso
 Authorization: Bearer {{auth_token}}
 
 ### List files in directory in bucket
@@ -56,18 +64,18 @@ GET localhost:8081/api/files/TestBucket/MeinSpeicher
 Authorization: Bearer {{auth_token}}
 
 ### Upload file to bucket
-POST localhost:8081/api/files/TestBucket/MeinSpeicher
+POST localhost:8081/api/files/Ellipso/
 Authorization: Bearer {{auth_token}}
 Content-Type: multipart/form-data; boundary=boundary
 
 --boundary
-Content-Disposition: form-data; name="file"; filename="martin.txt"
+Content-Disposition: form-data; name="file"; filename="test.txt"
 
 // File content
 < ./resources/testfile.txt
 
 ### List files in directory in bucket
-GET localhost:8081/api/files/TestBucket/MeinSpeicher
+GET localhost:8081/api/files/Ellipso
 Authorization: Bearer {{auth_token}}
 
 ### Download file from bucket and directory

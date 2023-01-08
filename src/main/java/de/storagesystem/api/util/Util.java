@@ -16,9 +16,11 @@ public class Util {
         return (long) Math.ceil((double) totalItems / limit);
     }
 
-    public static int calculateItemCount(long totalPages, long totalItems, int page, int limit) {
+    public static long calculateItemCount(long totalPages, long totalItems, int page, int limit)
+            throws IllegalArgumentException {
+        if(limit == 0) throw new IllegalArgumentException("Limit must not be 0");
         if(totalItems == 0) return 0;
-        if(page == totalPages - 1) return (int) (totalItems % limit);
+        if(page == totalPages - 1) return (int) (totalItems - (totalPages - 1) * limit);
         return limit;
     }
 
@@ -30,7 +32,7 @@ public class Util {
 
         long totalItems = content.size();
         long totalPages = Util.calculateTotalPages(totalItems, limit);
-        int itemCount = Util.calculateItemCount(totalPages, totalItems, page, limit);
+        long itemCount = Util.calculateItemCount(totalPages, totalItems, page, limit);
 
         return new ResponseBuilder()
                 .setStatus(ResponseState.OK)

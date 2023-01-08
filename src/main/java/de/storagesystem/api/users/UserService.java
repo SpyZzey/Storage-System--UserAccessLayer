@@ -74,16 +74,17 @@ public class UserService {
      * @return The user information of the sender.
      * @throws InvalidTokenException If the token is invalid.
      */
-    public Optional<User> getUser(String authentication) throws InvalidTokenException {
+    public Optional<User> getUser(String authentication, Long id) throws InvalidTokenException {
         String token = auth.extractTokenFromBearer(authentication);
         ObjectNode response = new ObjectMapper().createObjectNode();
         try {
             DecodedJWT content = ((RSAAuthentication) auth).verifyToken(token);
             Map<String, Claim> claims = content.getClaims();
-            if(claims.get("sub").asLong() != null) {
-                return userRepository.findById(claims.get("sub").asLong());
+            Long userId = claims.get("sub").asLong();
+            if(userId != null && userId.equals(id)) {
+                return userRepository.findById(userId);
             } else {
-                throw new InvalidTokenException("No id in token");
+                throw new InvalidTokenException("No permission to access this user");
             }
         } catch (JWTVerificationException e) {
             e.printStackTrace();
@@ -101,7 +102,7 @@ public class UserService {
      * @param authentication The authentication header/JWT Token.
      * @return A JSON Object with the status code and message.
      */
-    public ResponseEntity<ObjectNode> deleteUser(Long id, String authentication) throws InvalidTokenException{
+    public ResponseEntity<ObjectNode> deleteUser(String authentication, Long id) throws InvalidTokenException{
         logger.info("Delete user: " + id);
         String token = auth.extractTokenFromBearer(authentication);
         ObjectNode response = new ObjectMapper().createObjectNode();
@@ -215,7 +216,17 @@ public class UserService {
      * @throws JWTVerificationException If the token cannot be verified.
      */
     public Long getUserId(String authentication) throws InvalidTokenException, JWTVerificationException {
-        Optional<User> user = getUser(authentication);
+        String token = auth.extractTokenFromBearer(authentication);
+        DecodedJWT content = ((RSAAuthentication) auth).verifyToken(token);
+        Map<String, Claim> claims = content.getClaims();
+        Long userId = claims.get("sub").asLong();
+        Optional<User> user;
+        if(userId != null) {
+            user = userRepository.findById(userId);
+        } else {
+            throw new InvalidTokenException("No id in token");
+        }
+
         if(user.isEmpty()) throw new UserNotFoundException("User not found");
         return user.get().getId();
     }

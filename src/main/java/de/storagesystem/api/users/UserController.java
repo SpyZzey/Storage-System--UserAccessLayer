@@ -16,7 +16,7 @@ import java.util.Optional;
  * @author Simon Brebeck
  */
 @Controller
-@RequestMapping("/api/user")
+@RequestMapping("/api/users")
 public class UserController {
 
     /**
@@ -44,10 +44,11 @@ public class UserController {
      * @param authentication The authentication header/JWT Token.
      * @return An {@link Optional<User>} containing the user information if the user exists.
      */
-    @GetMapping
-    public @ResponseBody Optional<User> getUser(@RequestHeader(HttpHeaders.AUTHORIZATION) String authentication)
-            throws InvalidTokenException {
-        return userService.getUser(authentication);
+    @GetMapping("/{id}")
+    public @ResponseBody Optional<User> getUser(
+            @RequestHeader(HttpHeaders.AUTHORIZATION) String authentication,
+            @PathVariable("id") Long id) throws InvalidTokenException {
+        return userService.getUser(authentication, id);
     }
 
     /**
@@ -56,7 +57,9 @@ public class UserController {
      * @return A {@link ResponseEntity<ObjectNode>} object with the status code and the user id.
      */
     @PutMapping
-    public ResponseEntity<ObjectNode> createOrUpdateUser(@RequestBody User user) {
+    public ResponseEntity<ObjectNode> createOrUpdateUser(
+            @RequestHeader(HttpHeaders.AUTHORIZATION) String authentication,
+            @RequestBody User user) {
         return userService.createOrUpdateUser(user);
     }
 
@@ -66,12 +69,12 @@ public class UserController {
      * @param id The id of the user to be deleted.
      * @return A {@link ResponseEntity<ObjectNode>} object with the status code and message.
      */
-    @DeleteMapping
+    @DeleteMapping("/{id}")
     public ResponseEntity<ObjectNode> deleteUser(
             @RequestHeader(HttpHeaders.AUTHORIZATION) String authentication,
-            @RequestParam(value = "id") Long id)
+            @PathVariable(value = "id") Long id)
             throws InvalidTokenException {
-        return userService.deleteUser(id, authentication);
+        return userService.deleteUser(authentication, id);
     }
 
     /**

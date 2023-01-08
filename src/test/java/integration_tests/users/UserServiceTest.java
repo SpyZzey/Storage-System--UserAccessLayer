@@ -47,14 +47,14 @@ public class UserServiceTest {
 
         String token = creationResponse.get("token").asText();
         String authentication = "Bearer " + token;
-        Optional<User> userFromDB = service.getUser(authentication);
+        Optional<User> userFromDB = service.getUser(authentication, creationResponse.get("id").asLong());
         assertTrue(userFromDB.isPresent());
 
         User userRead = userFromDB.get();
         assertEquals(userRead, user);
 
         Long id = userRead.getId();
-        ResponseEntity<ObjectNode> deletionResponseEntity = service.deleteUser(id, authentication);
+        ResponseEntity<ObjectNode> deletionResponseEntity = service.deleteUser(authentication, id);
         assertEquals(deletionResponseEntity.getStatusCode(), HttpStatus.OK);
 
         ObjectNode deletionResponse = deletionResponseEntity.getBody();

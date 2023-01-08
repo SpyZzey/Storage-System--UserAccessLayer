@@ -92,34 +92,6 @@ public class StorageFolderController {
     }
 
     /**
-     * Creates a new folder in the given bucket
-     *
-     * @param authentication the authentication token
-     * @param bucket the bucket to create the folder in
-     * @param folder the name of the folder to create
-     * @return the response as a {@link ResponseEntity<ObjectNode>}
-     * @throws StorageEntityNotFoundException if the bucket or parent folder does not exist
-     * @throws StorageEntityCreationException if the folder could not be created
-     * @throws UserNotFoundException if the user does not exist
-     * @throws UserInputValidationException if the folder path or bucket-/foldername is invalid
-     * @throws InvalidTokenException if the token is invalid
-     */
-    @PostMapping(value = "/{bucket}")
-    public ResponseEntity<ObjectNode> handleDirectoryCreation(
-            @RequestHeader(HttpHeaders.AUTHORIZATION) String authentication,
-            @PathVariable("bucket") String bucket,
-            @RequestParam("folder") String folder)
-            throws
-            StorageEntityNotFoundException,
-            StorageEntityCreationException,
-            UserNotFoundException,
-            UserInputValidationException,
-            InvalidTokenException {
-        return handleDirectoryCreation(authentication, bucket, null, folder);
-    }
-
-
-    /**
      * Lists all folders inside a given folder
      * @param authentication the authentication token
      * @param bucketName the bucket to list the folders in
@@ -159,6 +131,33 @@ public class StorageFolderController {
         String pathToParent = (relativePath == null) ? "/" + bucketName : "/" + bucketName + "/" + relativePath;
         logger.info("Getting folder list of folder: " + pathToParent);
         return storageService.loadFolders(userService.getUserId(authentication), bucketName, pathToParent, page, limit);
+    }
+
+    /**
+     * Creates a new folder in the given bucket
+     *
+     * @param authentication the authentication token
+     * @param bucket the bucket to create the folder in
+     * @param folder the name of the folder to create
+     * @return the response as a {@link ResponseEntity<ObjectNode>}
+     * @throws StorageEntityNotFoundException if the bucket or parent folder does not exist
+     * @throws StorageEntityCreationException if the folder could not be created
+     * @throws UserNotFoundException if the user does not exist
+     * @throws UserInputValidationException if the folder path or bucket-/foldername is invalid
+     * @throws InvalidTokenException if the token is invalid
+     */
+    @PostMapping(value = "/{bucket}")
+    public ResponseEntity<ObjectNode> handleDirectoryCreation(
+            @RequestHeader(HttpHeaders.AUTHORIZATION) String authentication,
+            @PathVariable("bucket") String bucket,
+            @RequestParam("folder") String folder)
+            throws
+            StorageEntityNotFoundException,
+            StorageEntityCreationException,
+            UserNotFoundException,
+            UserInputValidationException,
+            InvalidTokenException {
+        return handleDirectoryCreation(authentication, bucket, null, folder);
     }
 
      /**
