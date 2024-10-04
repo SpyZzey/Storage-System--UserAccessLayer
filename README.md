@@ -18,7 +18,6 @@ Redundancy (WIP)
 Java 20
 Maven 3.6.3
 MySQL 8.0.23
-Postman (optional)
 
 # Installation
 Please clone the repository and rename the file `example.application.properties` to `application.properties` and
