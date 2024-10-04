@@ -15,9 +15,9 @@ Redundancy (WIP)
 - Store files redundantly to improve reliability and data integrity
 
 # Prerequisites
-Java 20
-Maven 3.6.3
-MySQL 8.0.23
+- Java 20
+- Maven 3.6.3
+- MySQL 8.0.23
 
 # Installation
 Please clone the repository and rename the file `example.application.properties` to `application.properties` and
