@@ -2,6 +2,8 @@
 This repository is part of a dynamic storage system, representing the USER ACCESS Layer. 
 The FILE ACCESS Layer can be found here: [File Access Layer](https://github.com/SpyZzey/Storage-System--FileAccessLayer)
 
+Note: README is not finished...
+
 ## Features
 Buckets, Directories and Files
 - Support for common object storage structures used by hyperscalers like AWS S3.
