@@ -1,4 +1,4 @@
-package de.storagesystem.api.storage.servers;
+package de.storagesystem.api.servers;
 
 import java.util.Optional;
 

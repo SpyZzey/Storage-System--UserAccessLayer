@@ -4,9 +4,8 @@ import de.storagesystem.api.exceptions.StorageEntityCreationException;
 import de.storagesystem.api.storage.buckets.BucketDAO;
 import de.storagesystem.api.storage.files.StorageFileDAO;
 import de.storagesystem.api.storage.folders.StorageFolderDAO;
-import de.storagesystem.api.storage.servers.StorageServer;
-import de.storagesystem.api.storage.servers.StorageServerController;
-import de.storagesystem.api.storage.servers.StorageServerDAO;
+import de.storagesystem.api.servers.StorageServer;
+import de.storagesystem.api.servers.StorageServerDAO;
 import de.storagesystem.api.users.UserDAO;
 import io.github.cdimascio.dotenv.Dotenv;
 import org.apache.logging.log4j.LogManager;
@@ -30,7 +29,13 @@ public class StorageService {
     /**
      * The {@link Path} to the root directory of the storage
      */
-    private static Path ROOT;
+    private static String ROOT;
+
+    /**
+     * The authentication token for the storage server
+     */
+    private static String serverAuth;
+
 
     /**
      * The max amount of subpartitions of users in a user-partition
@@ -118,7 +123,7 @@ public class StorageService {
     public void init() {
         Dotenv dotenv = Dotenv.load();
         // Load the storage root path from the .env file
-        ROOT = Path.of(dotenv.get("STORAGE_ROOT"));
+        ROOT = dotenv.get("STORAGE_ROOT");
         // Load server prefix from the .env file
         serverPrefix = dotenv.get("SERVER_PREFIX");
 
@@ -134,17 +139,6 @@ public class StorageService {
         }
     }
 
-    /**
-     * Get the path of a folder by its path string
-     * @param pathString The path to search for
-     */
-    protected Path getFolderPathByString(String pathString) {
-        Path path = Path.of(File.separator);
-        if(pathString != null && !pathString.isEmpty()) {
-            path = path.resolve(pathString);
-        }
-        return path;
-    }
 
     /**
      * Generate a path where a file can be stored for a user
@@ -223,7 +217,7 @@ public class StorageService {
      * @return The root path of the storage
      */
     public String root() {
-        return ROOT.toString();
+        return ROOT;
     }
 
     /**

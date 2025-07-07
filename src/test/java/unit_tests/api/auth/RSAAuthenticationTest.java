@@ -2,7 +2,6 @@ package unit_tests.api.auth;
 
 import com.auth0.jwt.interfaces.Claim;
 import com.auth0.jwt.interfaces.DecodedJWT;
-import de.storagesystem.api.auth.Authentication;
 import de.storagesystem.api.auth.RSAAuthentication;
 import de.storagesystem.api.exceptions.InvalidTokenException;
 import org.junit.jupiter.api.Test;
@@ -29,7 +28,7 @@ public class RSAAuthenticationTest {
     public void createAndReadRSAKeys() throws IOException, NoSuchAlgorithmException, InvalidKeySpecException {
         String publicKeyPath = "./src/test/keys/test_key.pub";
         String privateKeyPath = "./src/test/keys/test_key.key";
-        RSAAuthentication auth = new RSAAuthentication();
+        RSAAuthentication auth = new RSAAuthentication("TestIssuer", publicKeyPath, privateKeyPath);
 
         RSAPublicKey publicKey = auth.getPublicKey(publicKeyPath);
         RSAPrivateKey privateKey = auth.getPrivateKey(privateKeyPath);
@@ -49,7 +48,9 @@ public class RSAAuthenticationTest {
      */
     @Test
     public void createTokenAndExtractContentTest() throws InvalidTokenException, IOException, NoSuchAlgorithmException, InvalidKeySpecException {
-        RSAAuthentication auth = new RSAAuthentication();
+        String publicKeyPath = "./src/test/keys/test_key.pub";
+        String privateKeyPath = "./src/test/keys/test_key.key";
+        RSAAuthentication auth = new RSAAuthentication("TestIssuer", publicKeyPath, privateKeyPath);
 
         Map<String, String> payload = Map.of("KeyA", "ValueA", "KeyB", "ValueB");
         String token = auth.createToken(payload);

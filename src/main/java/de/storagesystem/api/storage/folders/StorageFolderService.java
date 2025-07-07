@@ -1,10 +1,9 @@
 package de.storagesystem.api.storage.folders;
 
-import org.springframework.core.io.ByteArrayResource;
-import org.springframework.web.multipart.MultipartFile;
+import com.fasterxml.jackson.databind.node.ObjectNode;
+import org.springframework.http.ResponseEntity;
 
 import java.nio.file.Path;
-import java.util.stream.Stream;
 
 /**
  * @author Simon Brebeck
@@ -26,7 +25,7 @@ public interface StorageFolderService {
      * @param bucketDirectoryName The name of the directory.
      * @return true if the directory was created successfully, false otherwise.
      */
-    boolean createFolder(Long userId, String bucketName, String parentDirectoryPath, String bucketDirectoryName);
+    ResponseEntity<ObjectNode> createFolder(Long userId, String bucketName, String parentDirectoryPath, String bucketDirectoryName);
 
     /**
      * Deletes a directory from a user bucket
@@ -35,22 +34,17 @@ public interface StorageFolderService {
      * @param directoryPath The path of the directory.
      * @return true if the bucket was deleted successfully, false otherwise.
      */
-    boolean deleteFolder(Long userId, String bucketName, String directoryPath);
-
-
-    /**
-     * Loads all folders from a user.
-     * @param userId    The id of the user.
-     * @return Stream of paths to the files
-     */
-    Stream<Path> loadAllFolders(Long userId);
+    ResponseEntity<ObjectNode> deleteFolder(Long userId, String bucketName, String directoryPath);
 
     /**
-     * Loads a folder from a user.
-     * @param userId    The id of the user.
-     * @param filePath  The Path of the file to load
-     * @return the path to the file
+     * Load the folders of a parent folder or bucket from a user.
+     * @param userId The id of the user.
+     * @param bucket The name of the bucket.
+     * @param pathToParent The path of the parent folder.
+     * @param page The page to load.
+     * @param limit The limit of folders to load per page.
      */
-    Path loadFolderByPath(Long userId, String bucket, Path filePath);
+    ResponseEntity<ObjectNode> loadFolders(Long userId, String bucket, String pathToParent, int page, int limit);
+
 
 }

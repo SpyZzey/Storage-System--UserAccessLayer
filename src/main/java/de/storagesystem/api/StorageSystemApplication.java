@@ -1,25 +1,18 @@
 package de.storagesystem.api;
 
-import de.storagesystem.api.storage.buckets.BucketService;
-import de.storagesystem.api.storage.servers.StorageServer;
-import de.storagesystem.api.storage.servers.StorageServerDAO;
-import io.github.cdimascio.dotenv.Dotenv;
+import com.ulisesbocchio.jasyptspringboot.annotation.EnableEncryptableProperties;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.boot.context.event.ApplicationReadyEvent;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.event.EventListener;
+import org.springframework.boot.context.properties.ConfigurationPropertiesScan;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 import javax.annotation.PreDestroy;
-import java.io.File;
-import java.util.Optional;
 
 @SpringBootApplication
+@EnableEncryptableProperties
+@ConfigurationPropertiesScan("de.storagesystem.api.properties")
 public class StorageSystemApplication implements WebMvcConfigurer {
 
     /**
@@ -43,7 +36,6 @@ public class StorageSystemApplication implements WebMvcConfigurer {
     @PreDestroy
     public void onExit() {
         logger.info("Stopping StorageSystem API Test");
-
     }
 
 }

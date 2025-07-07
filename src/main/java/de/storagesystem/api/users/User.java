@@ -1,19 +1,20 @@
 package de.storagesystem.api.users;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
 import com.sun.istack.NotNull;
+import de.storagesystem.api.storage.buckets.Bucket;
 
 import javax.crypto.KeyGenerator;
 import javax.crypto.SecretKey;
 import javax.persistence.*;
 import java.security.NoSuchAlgorithmException;
+import java.util.List;
 import java.util.Objects;
 
 /**
  * @author Simon Brebeck
  */
 @Entity
-@Table
+@Table(name = "users")
 public class User {
 
     /**
@@ -33,21 +34,18 @@ public class User {
      * The first name of the user
      */
     @NotNull
-    @JsonProperty("firstname")
     private String firstname;
 
     /**
      * The last name of the user
      */
     @NotNull
-    @JsonProperty("lastname")
     private String lastname;
 
     /**
      * The email of the user
      */
     @NotNull
-    @JsonProperty("email")
     private String email;
 
     /**
@@ -57,10 +55,11 @@ public class User {
     private SecretKey secretKey;
 
     /**
-     * The {@link BucketUser} of the user
+     * The buckets of the user
      */
-    @Transient
-    private BucketUser bucketUser;
+    @ManyToMany(mappedBy = "users", fetch = FetchType.LAZY)
+    private List<Bucket> buckets;
+
 
     /**
      * Instantiates a new User.
@@ -88,7 +87,7 @@ public class User {
      * Getter for the id of the user
      * @return the id of the user
      */
-    public long id() {
+    public long getId() {
         return id;
     }
 
@@ -96,7 +95,7 @@ public class User {
      * Getter for the first name of the user
      * @return the first name of the user
      */
-    public String firstname() {
+    public String getFirstname() {
         return firstname;
     }
 
@@ -104,7 +103,7 @@ public class User {
      * Getter for the last name of the user
      * @return the last name of the user
      */
-    public String lastname() {
+    public String getLastname() {
         return lastname;
     }
 
@@ -112,7 +111,7 @@ public class User {
      * Getter for the email of the user
      * @return the email of the user
      */
-    public String email() {
+    public String getEmail() {
         return email;
     }
 
@@ -152,7 +151,7 @@ public class User {
      * Getter for the secret key of the user
      * @return the secret key of the user
      */
-    public SecretKey secretKey() {
+    public SecretKey getSecretKey() {
         return secretKey;
     }
 
@@ -165,24 +164,13 @@ public class User {
     }
 
     /**
-     * Getter for the {@link BucketUser} of the user, creates a new one if it is null
-     * @return the {@link BucketUser} of the user
-     */
-    public BucketUser bucketUser() {
-        if(bucketUser == null) {
-            bucketUser = new BucketUser(firstname, lastname,  email);
-        }
-        return bucketUser;
-    }
-
-    /**
      * Updaes the user with the data of the given {@link User}
      * @param user the user to update the data from
      */
     public void update(User user) {
-        this.firstname = user.firstname();
-        this.lastname = user.lastname();
-        this.email = user.email();
+        this.firstname = user.getFirstname();
+        this.lastname = user.getLastname();
+        this.email = user.getEmail();
     }
 
     /**

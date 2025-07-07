@@ -6,15 +6,13 @@ import org.springframework.stereotype.Repository;
 
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
-import java.io.File;
-import java.nio.file.Path;
 import java.util.Optional;
 
 /**
  * @author Simon Brebeck
  */
 @Repository
-public class StorageFolderDAOImpl implements StorageFolderCustomDAO {
+public class StorageFolderCustomDAOImpl implements StorageFolderCustomDAO {
 
     /**
      * The {@link EntityManager} used to access the database.
@@ -26,10 +24,10 @@ public class StorageFolderDAOImpl implements StorageFolderCustomDAO {
      * {@inheritDoc}
      */
     @Override
-    public Optional<StorageFolder> findByPath(Bucket bucket, Path path) {
+    public Optional<StorageFolder> findByPath(Bucket bucket, String path) {
         return em.createQuery("SELECT b FROM StorageFolder b WHERE b.bucket.id = :bucketId AND b.path = :path", StorageFolder.class)
-                .setParameter("bucketId", bucket.id())
-                .setParameter("path", path.toString())
+                .setParameter("bucketId", bucket.getId())
+                .setParameter("path", path)
                 .getResultStream()
                 .findFirst();
     }
@@ -38,23 +36,27 @@ public class StorageFolderDAOImpl implements StorageFolderCustomDAO {
      * {@inheritDoc}
      */
     public boolean exists(Bucket bucket, String parentPath, String folder) {
-        return findByPath(bucket, Path.of(parentPath).resolve(folder)).isPresent();
+        String path = (parentPath != null ? parentPath : "") + "/" + folder;
+
+        return findByPath(bucket, path).isPresent();
     }
 
     /**
      * {@inheritDoc}
      * @throws StorageEntityNotFoundException if the folder does not exist.
      */
-    public StorageFolder getFolderByPath(Bucket bucket, Path folderPath) throws StorageEntityNotFoundException {
-        return findByPath(bucket, folderPath)
-                .orElseThrow(() -> new StorageEntityNotFoundException("Directory not found", "Directory " + folderPath));
+    public StorageFolder getFolderByPath(Bucket bucket, String path) throws StorageEntityNotFoundException {
+        return findByPath(bucket, path)
+                .orElseThrow(() -> new StorageEntityNotFoundException("Directory not found", "Directory " + path));
     }
 
     /**
      * {@inheritDoc}
+     *
+     * @throws StorageEntityNotFoundException if the folder does not exist.
      */
-    public StorageFolder getFolderIfNotBucketElseNull(Bucket bucket, Path path) {
-        if(path.toString().equals(File.separator)) return null;
+    public StorageFolder getFolder(Bucket bucket, String path) {
+        if(path == null || path.equalsIgnoreCase("/")) return bucket.getRootFolder();
         return getFolderByPath(bucket, path);
     }
 }

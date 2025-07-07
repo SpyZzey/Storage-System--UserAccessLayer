@@ -2,7 +2,6 @@ package de.storagesystem.api.storage.folders;
 
 import de.storagesystem.api.storage.buckets.Bucket;
 
-import java.nio.file.Path;
 import java.util.Optional;
 
 /**
@@ -13,12 +12,12 @@ public interface StorageFolderCustomDAO {
     /**
      * Returns an optional containing the {@link StorageFolder} with the name from a bucket and a path, if it exists.
      * @param bucket The bucket where the folder is located.
-     * @param path The relative {@link Path} to the folder from the bucket.
+     * @param path The relative Path to the folder from the bucket.
      * @return an optional containing the {@link StorageFolder}, if it exists.
      * @see Bucket
      * @see StorageFolder
      */
-    Optional<StorageFolder> findByPath(Bucket bucket, Path path);
+    Optional<StorageFolder> findByPath(Bucket bucket, String path);
 
     /**
      * Checks if a {@link StorageFolder} with the name folder exists in a bucket and a path.
@@ -34,22 +33,22 @@ public interface StorageFolderCustomDAO {
      * Returns the {@link StorageFolder} with the name from a bucket and a path, if it exists.
      *
      * @param bucket The bucket where the folder is located.
-     * @param folderPath The relative path to the folder from the bucket.
+     * @param path The relative path to the folder from the bucket.
      * @return the {@link StorageFolder}, if it exists.
      *
      * @see Bucket
      * @see StorageFolder
      */
-    StorageFolder getFolderByPath(Bucket bucket, Path folderPath);
+    StorageFolder getFolderByPath(Bucket bucket, String path);
 
     /**
      * Get the {@link StorageFolder} with the name from a bucket and a path, if it exists.
      *
-     * @param bucket    The bucket to search in
-     * @param path      The path to search for
+     * @param bucket The bucket to search in
+     * @param path The path to search for
      * @return The {@link StorageFolder} if it exists, else null
      *
      * @see Bucket
      */
-    StorageFolder getFolderIfNotBucketElseNull(Bucket bucket, Path path);
+    StorageFolder getFolder(Bucket bucket, String path);
 }

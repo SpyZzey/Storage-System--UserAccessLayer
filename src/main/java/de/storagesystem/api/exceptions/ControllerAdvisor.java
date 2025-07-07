@@ -16,10 +16,30 @@ import java.util.Objects;
 @ControllerAdvice
 public class ControllerAdvisor extends ResponseEntityExceptionHandler {
 
+    /**
+     * Handles the {@link IllegalArgumentException} and returns a {@link ResponseEntity} with a bad request status code.
+     * @param e The {@link IllegalArgumentException} that was thrown.
+     * @return The {@link ResponseEntity} with the status code and an error message.
+     */
+    @ExceptionHandler(IllegalArgumentException.class)
+    public ResponseEntity<Map<String, String>> handleIllegalArgumentException(IllegalArgumentException e) {
+        return ResponseEntity.badRequest().body(Map.of(
+                "status", "error",
+                "message", e.getMessage()));
+    }
 
+
+    /**
+     * Handles the {@link HttpClientErrorException} and returns a {@link ResponseEntity}
+     * with the status code of the exception.
+     * @param e The {@link HttpClientErrorException} that was thrown.
+     * @return The {@link ResponseEntity} with the status code and an error message.
+     */
     @ExceptionHandler(HttpClientErrorException.class)
     public ResponseEntity<Map<String, String>> handleHttpClientErrorException(HttpClientErrorException e) {
-        return ResponseEntity.status(e.getStatusCode()).body(Map.of("message", Objects.requireNonNull(e.getMessage())));
+        return ResponseEntity.status(e.getStatusCode()).body(Map.of(
+                "status", "error",
+                "message", Objects.requireNonNull(e.getMessage())));
     }
 
     /**
@@ -54,7 +74,7 @@ public class ControllerAdvisor extends ResponseEntityExceptionHandler {
      */
     @ExceptionHandler(StorageEntityNotFoundException.class)
     public ResponseEntity<?> handleStorageFileNotFound(StorageEntityNotFoundException e) {
-        logger.info("Storage Entity was not found");
+        logger.info("Storage Entity was not found: " + e.entityName());
         return ResponseEntity.badRequest().body(Map.of(
                 "status", "error",
                 "message", e.getMessage()));

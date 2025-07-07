@@ -9,6 +9,7 @@ import javax.persistence.*;
  * @author Simon Brebeck
  */
 @Entity
+@Table(name = "privileges")
 public class Privilege {
 
     /**
@@ -49,7 +50,7 @@ public class Privilege {
      * Getter for the id of the privilege
      * @return the id of the privilege
      */
-    public Long id() {
+    public Long getId() {
         return id;
     }
 
@@ -65,7 +66,7 @@ public class Privilege {
      * Getter for the name of the privilege
      * @return the name of the privilege
      */
-    public String name() {
+    public String getName() {
         return name;
     }
 
@@ -81,7 +82,7 @@ public class Privilege {
      * Getter for the description of the privilege
      * @return the description of the privilege
      */
-    public String description() {
+    public String getDescription() {
         return description;
     }
 
