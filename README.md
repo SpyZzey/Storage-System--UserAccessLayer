@@ -1,6 +1,7 @@
 # Dynamic Storage System
 This repository is part of a dynamic storage system, representing the USER ACCESS Layer. 
 The FILE ACCESS Layer can be found here: [File Access Layer](https://github.com/SpyZzey/Storage-System--FileAccessLayer)
+The USER ACCESS Layer can be found here: [User Access Layer](https://github.com/SpyZzey/Storage-System--UserAccessLayer)
 
 Note: README is not finished...
 
